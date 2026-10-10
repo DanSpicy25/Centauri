@@ -1,0 +1,212 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Superficies y Fondos */
+    --color-canvas: #FBFBF9;
+    --color-surface: #FFFFFF;
+    --color-surface-subtle: #F5F4EF;
+    --color-surface-hover: #ECEAE3;
+    --color-surface-active: #E3E0D6;
+
+    /* Bordes */
+    --color-border: #E5E3DC;
+    --color-border-strong: #D1CEBF;
+    --color-border-focus: #C85A32;
+
+    /* Tipografía y Jerarquía */
+    --color-text-main: #141413;
+    --color-text-secondary: #5C5B56;
+    --color-text-muted: #7D7A73;
+    --color-text-inverse: #FFFFFF;
+
+    /* Marca Terracota Editorial */
+    --color-brand-primary: #C85A32;
+    --color-brand-hover: #B34E2A;
+    --color-brand-active: #9A4122;
+    --color-brand-accent: #E07A5F;
+    --color-brand-surface: #FBF1EC;
+    --color-brand-ring: #C85A32;
+
+    /* Semántica & Feedback Accesible */
+    --color-success-text: #0D543A;
+    --color-success-surface: #ECFDF5;
+    --color-success-border: #A7F3D0;
+
+    --color-warning-text: #854D0E;
+    --color-warning-surface: #FEFCE8;
+    --color-warning-border: #FEF08A;
+
+    --color-error-text: #991B1B;
+    --color-error-surface: #FEF2F2;
+    --color-error-border: #FECACA;
+
+    --color-info-text: #1E40AF;
+    --color-info-surface: #EFF6FF;
+    --color-info-border: #BFDBFE;
+
+    /* Tipografía */
+    --font-heading: 'Playfair Display', Georgia, serif;
+    --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    /* Motion */
+    --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-normal: 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-text-main);
+    font-family: var(--font-body);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Indicadores de foco universales de alto contraste */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: 2px;
+  }
+
+  /* Respeto estricto por reducción de movimiento (WCAG AAA) */
+  @media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Tipografías editoriales especializadas */
+.font-editorial-heading {
+  font-family: var(--font-heading);
+}
+
+.font-editorial-body {
+  font-family: var(--font-body);
+}
+
+.font-editorial-mono {
+  font-family: var(--font-mono);
+}
+
+/* Micro-interacciones y animaciones sutiles */
+@keyframes fadeInSubtle {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(200, 90, 50, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(200, 90, 50, 0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeInSubtle var(--transition-normal) forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-down {
+  animation: slideInDown 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s infinite;
+}
+
+/* Clases de interacción táctil y respuesta táctil */
+.btn-press {
+  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+.card-action-hover {
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1), border-color 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-action-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px -5px rgba(20, 20, 19, 0.08), 0 8px 10px -6px rgba(20, 20, 19, 0.04);
+  border-color: rgba(200, 90, 50, 0.35);
+}
+
+/* Textura sutil y no invasiva para cabeceras */
+.bg-subtle-mesh {
+  background-image: 
+    radial-gradient(at 100% 0%, rgba(200, 90, 50, 0.035) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(224, 122, 95, 0.025) 0px, transparent 50%);
+}
+
+/* Aro distintivo para avatares */
+.avatar-brand-ring {
+  box-shadow: 0 0 0 2px var(--color-canvas), 0 0 0 4px var(--color-brand-primary);
+}
+
+/* Tarjeta base con borde controlado */
+.surface-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px 0 rgba(20, 20, 19, 0.04);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.surface-card:hover {
+  border-color: var(--color-border-strong);
+}

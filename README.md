@@ -4,7 +4,7 @@
 > **Marca Comercial Pública:** Lyberate  
 > **Nombre Clave de Arquitectura & Control Room:** Centauri  
 > **Versión de Lanzamiento:** 1.0.0 (Fases 00 a 09 Completadas al 100%)  
-> **Repositorio Oficial:** [https://github.com/Lyberate-app/Centauri](https://github.com/Lyberate-app/Centauri)  
+> **Repositorios Oficiales:** [Lyberate-app/Centauri](https://github.com/Lyberate-app/Centauri) · [DanSpicy25/Centauri](https://github.com/DanSpicy25/Centauri)  
 > **Garantía de Calidad:** 14 suites de pruebas unitarias (107 tests pasando), 0 errores TypeScript (`strict`), WCAG 2.1 AA/AAA.
 
 ---

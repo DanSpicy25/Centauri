@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "deploy": "npm run build && wrangler deploy",
     "preview": "vite preview",
     "test": "vitest run"
   },
@@ -25,7 +26,7 @@
     "tailwindcss": "^4.0.6",
     "typescript": "^5.7.3",
     "vite": "^6.1.0",
-    "vitest": "^3.0.5"
+    "vitest": "^3.0.5",
+    "wrangler": "^4.149.0"
   }
 }
-

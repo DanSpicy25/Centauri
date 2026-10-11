@@ -5,7 +5,7 @@ import { Button } from '../components/ui/Button';
 export const NotFoundPage: React.FC = () => {
   return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4 py-16">
-      <span className="text-4xl font-mono font-bold text-[#C85A32] mb-3">404</span>
+      <span className="text-4xl font-mono font-bold text-[#7C3AED] mb-3">404</span>
       <h1 className="text-2xl sm:text-3xl font-bold text-[#141413] mb-2 font-editorial-heading">
         Página no encontrada
       </h1>

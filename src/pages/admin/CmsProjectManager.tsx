@@ -11,8 +11,12 @@ import {
   ExternalLink,
   ShieldCheck,
   Search,
+  Upload,
+  FileSpreadsheet,
+  Info,
 } from 'lucide-react';
 import { projectRepository } from '../../repositories/projectRepository';
+import { SAMPLE_BATCH_40_PROJECTS } from '../../data/sampleBatchProjects';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
@@ -32,6 +36,32 @@ export const CmsProjectManager: React.FC = () => {
   const [isNewProject, setIsNewProject] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Estados del Importador Masivo (~40 proyectos)
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importFormat, setImportFormat] = useState<'json' | 'csv'>('json');
+  const [importRawInput, setImportRawInput] = useState('');
+  const [importStep, setImportStep] = useState<'input' | 'preview' | 'result'>('input');
+  const [parsedRows, setParsedRows] = useState<Array<{
+    tempId: string;
+    name: string;
+    slug: string;
+    category: string;
+    tagline: string;
+    summary: string;
+    thumbnailUrl: string;
+    thumbnailAlt: string;
+    thumbnailCredit: string;
+    publicUrl?: string;
+    relationship: ProjectRelationship;
+    verifiedTechnologies: string[];
+    isDuplicate: boolean;
+    missingFields: string[];
+    imageFormat: string;
+    imageSuggestions: string[];
+    selected: boolean;
+  }>>([]);
+  const [importStats, setImportStats] = useState<{ imported: number; skipped: number; total: number } | null>(null);
 
   // Estados para añadir imágenes a la galería
   const [newGalleryUrl, setNewGalleryUrl] = useState('');
@@ -76,6 +106,158 @@ export const CmsProjectManager: React.FC = () => {
   const showFeedback = (type: 'success' | 'error', text: string) => {
     setFeedback({ type, text });
     setTimeout(() => setFeedback(null), 4000);
+  };
+
+  // --- MANEJADORES DEL IMPORTADOR MASIVO ---
+  const parseRowsFromData = (data: any[]) => {
+    const rows = data.map((item, idx) => {
+      const name = String(item.name || '').trim();
+      const slug = String(item.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `proyecto-${idx + 1}`);
+      const category = String(item.category || 'Aplicaciones Web').trim();
+      const tagline = String(item.tagline || '').trim();
+      const summary = String(item.summary || '').trim();
+      const thumbnailUrl = String(item.thumbnailUrl || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=80').trim();
+      const thumbnailAlt = String(item.thumbnailAlt || '').trim();
+      const thumbnailCredit = String(item.thumbnailCredit || '').trim();
+      const publicUrl = item.publicUrl ? String(item.publicUrl).trim() : undefined;
+      const relationship = (item.relationship === 'own' || item.relationship === 'client' || item.relationship === 'partner' ? item.relationship : 'client') as ProjectRelationship;
+      const verifiedTechnologies = Array.isArray(item.verifiedTechnologies) ? item.verifiedTechnologies : ['React 19', 'TypeScript'];
+
+      // Detección de duplicados
+      const isDuplicate = projects.some(p => p.slug === slug || p.name.toLowerCase() === name.toLowerCase());
+      
+      // Detección de campos faltantes
+      const missingFields: string[] = [];
+      if (!name) missingFields.push('Nombre');
+      if (!category) missingFields.push('Categoría');
+      if (!summary) missingFields.push('Resumen');
+
+      // Análisis de imagen y sugerencias SEO
+      let imageFormat = 'URL Externa';
+      if (thumbnailUrl.includes('.webp')) imageFormat = 'WebP';
+      else if (thumbnailUrl.includes('.png')) imageFormat = 'PNG';
+      else if (thumbnailUrl.includes('.jpg') || thumbnailUrl.includes('.jpeg')) imageFormat = 'JPEG';
+      else if (thumbnailUrl.includes('unsplash.com')) imageFormat = 'CDN WebP';
+
+      const imageSuggestions: string[] = [];
+      if (!thumbnailUrl.includes('.webp') && !thumbnailUrl.includes('auto=format')) {
+        imageSuggestions.push('Sugerencia: Convertir a WebP (1200x630px para vista previa en redes).');
+      }
+      if (!thumbnailAlt) {
+        imageSuggestions.push(`Alt text sugerido: "Captura de pantalla de ${name}"`);
+      }
+      if (!thumbnailCredit) {
+        imageSuggestions.push('Atribución pendiente: Registrar crédito antes de publicar.');
+      }
+
+      return {
+        tempId: `row-${idx}-${Date.now()}`,
+        name,
+        slug,
+        category,
+        tagline,
+        summary,
+        thumbnailUrl,
+        thumbnailAlt,
+        thumbnailCredit,
+        publicUrl,
+        relationship,
+        verifiedTechnologies,
+        isDuplicate,
+        missingFields,
+        imageFormat,
+        imageSuggestions,
+        selected: !isDuplicate && missingFields.length === 0,
+      };
+    });
+
+    setParsedRows(rows);
+    setImportStep('preview');
+  };
+
+  const handleLoadSampleBatch = () => {
+    setImportRawInput(JSON.stringify(SAMPLE_BATCH_40_PROJECTS, null, 2));
+    setImportFormat('json');
+    parseRowsFromData(SAMPLE_BATCH_40_PROJECTS);
+  };
+
+  const handleParseCustomInput = () => {
+    try {
+      if (importFormat === 'json') {
+        const parsed = JSON.parse(importRawInput);
+        if (!Array.isArray(parsed)) throw new Error('El JSON debe ser un arreglo de proyectos.');
+        parseRowsFromData(parsed);
+      } else {
+        const lines = importRawInput.split('\n').map(l => l.trim()).filter(Boolean);
+        if (lines.length < 2) throw new Error('El CSV debe incluir cabeceras y al menos una fila.');
+        const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+        const data = lines.slice(1).map(line => {
+          const values = line.split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
+          const obj: any = {};
+          headers.forEach((h, i) => {
+            obj[h] = values[i] || '';
+          });
+          return obj;
+        });
+        parseRowsFromData(data);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al procesar el archivo.';
+      showFeedback('error', msg);
+    }
+  };
+
+  const handleToggleRow = (tempId: string) => {
+    setParsedRows(prev => prev.map(r => r.tempId === tempId ? { ...r, selected: !r.selected } : r));
+  };
+
+  const handleSelectAll = (select: boolean) => {
+    setParsedRows(prev => prev.map(r => ({ ...r, selected: select })));
+  };
+
+  const handleExecuteImport = () => {
+    const toImport = parsedRows.filter(r => r.selected);
+    if (toImport.length === 0) {
+      showFeedback('error', 'Selecciona al menos un proyecto para importar.');
+      return;
+    }
+
+    let count = 0;
+    toImport.forEach(item => {
+      projectRepository.createProjectDraft({
+        name: item.name,
+        slug: item.slug,
+        category: item.category,
+        tagline: item.tagline,
+        summary: item.summary,
+        thumbnailUrl: item.thumbnailUrl,
+        thumbnailAlt: item.thumbnailAlt || `Captura de pantalla de ${item.name}`,
+        thumbnailCredit: item.thumbnailCredit || 'Captura autorizada',
+        publicUrl: item.publicUrl,
+        relationship: item.relationship,
+        verifiedTechnologies: item.verifiedTechnologies,
+        editorialState: 'draft',
+        published: false,
+        attributionApproved: false,
+      });
+      count++;
+    });
+
+    refreshList();
+    setImportStats({
+      imported: count,
+      skipped: parsedRows.length - count,
+      total: parsedRows.length,
+    });
+    setImportStep('result');
+    showFeedback('success', `Se han importado ${count} proyectos como borradores listos para revisión.`);
+  };
+
+  const handleCloseImportModal = () => {
+    setImportModalOpen(false);
+    setImportStep('input');
+    setParsedRows([]);
+    setImportStats(null);
   };
 
   // Crear nuevo borrador
@@ -156,8 +338,17 @@ export const CmsProjectManager: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Button variant="primary" size="sm" onClick={handleCreateDraft} className="gap-2">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setImportModalOpen(true)}
+            className="gap-2 border-[#E5E3DC] hover:border-[#7C3AED] hover:text-[#7C3AED]"
+          >
+            <Upload className="w-4 h-4 text-[#7C3AED]" />
+            <span>Importar Lote (~40 Proyectos)</span>
+          </Button>
+          <Button variant="primary" size="sm" onClick={handleCreateDraft} className="gap-2 bg-[#7C3AED] hover:bg-[#6D28D9]">
             <Plus className="w-4 h-4" />
             <span>+ Nuevo Proyecto</span>
           </Button>
@@ -627,6 +818,316 @@ export const CmsProjectManager: React.FC = () => {
           El proyecto será removido del repositorio de inmediato.
         </p>
       </Dialog>
+
+      {/* Modal / Dialog de Importación Masiva (~40 proyectos) */}
+      {importModalOpen && (
+        <Dialog
+          isOpen={true}
+          onClose={handleCloseImportModal}
+          title="Importador Masivo de Proyectos & Páginas (~40 Proyectos)"
+          description="Incorpora catálogos estructurados en JSON o CSV. Todos los registros ingresan como borradores no publicados para revisión de los socios."
+          footer={
+            <div className="flex justify-end gap-3">
+              {importStep === 'preview' && (
+                <Button variant="outline" size="sm" onClick={() => setImportStep('input')}>
+                  Volver a Origen
+                </Button>
+              )}
+              {importStep === 'input' && (
+                <Button variant="outline" size="sm" onClick={handleCloseImportModal}>
+                  Cancelar
+                </Button>
+              )}
+              {importStep === 'input' && importRawInput.trim() && (
+                <Button variant="primary" size="sm" onClick={handleParseCustomInput} className="bg-[#7C3AED] hover:bg-[#6D28D9]">
+                  Analizar & Auditar
+                </Button>
+              )}
+              {importStep === 'preview' && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleExecuteImport}
+                  className="bg-[#7C3AED] hover:bg-[#6D28D9]"
+                  disabled={parsedRows.filter((r) => r.selected).length === 0}
+                >
+                  Importar {parsedRows.filter((r) => r.selected).length} Proyectos como Borradores
+                </Button>
+              )}
+              {importStep === 'result' && (
+                <Button variant="primary" size="sm" onClick={handleCloseImportModal} className="bg-[#7C3AED] hover:bg-[#6D28D9]">
+                  Finalizar
+                </Button>
+              )}
+            </div>
+          }
+        >
+          <div className="space-y-6 max-h-[75vh] overflow-y-auto pr-1">
+            {/* PASO 1: ENTRADA DE DATOS */}
+            {importStep === 'input' && (
+              <div className="space-y-6">
+                {/* Banner de carga rápida con 40 proyectos */}
+                <div className="bg-gradient-to-r from-[#FAF5FF] to-white p-5 rounded-2xl border border-[#E9D5FF] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[#7C3AED]" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-[#7C3AED]">
+                        Muestra Lista para Demostración
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-bold text-[#141413]">
+                      Lote oficial de 40 proyectos diversificados
+                    </h4>
+                    <p className="text-xs text-[#5C5B56] max-w-xl">
+                      Carga instantáneamente un conjunto de 40 sistemas reales (salud, logística, gastronomía, finanzas, ferretería, etc.) con imágenes, etiquetas SEO y autorizaciones simuladas.
+                    </p>
+                  </div>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleLoadSampleBatch}
+                    className="shrink-0 bg-[#7C3AED] hover:bg-[#6D28D9] gap-1.5 text-xs py-2 px-4 shadow-sm"
+                  >
+                    <FileSpreadsheet className="w-4 h-4" />
+                    <span>Cargar los 40 Proyectos</span>
+                  </Button>
+                </div>
+
+                <div className="relative flex items-center justify-center">
+                  <div className="border-t border-[#E5E3DC] w-full" />
+                  <span className="bg-white px-3 text-[11px] font-semibold text-[#8A8881] uppercase tracking-wider absolute">
+                    O pega tus datos manualmente
+                  </span>
+                </div>
+
+                {/* Formato y Textarea */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#141413]">
+                      Formato de Datos:
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setImportFormat('json')}
+                        className={`px-3 py-1 text-xs font-semibold rounded-lg border transition-all ${
+                          importFormat === 'json'
+                            ? 'bg-[#141413] text-white border-[#141413]'
+                            : 'bg-white text-[#5C5B56] border-[#E5E3DC] hover:text-[#141413]'
+                        }`}
+                      >
+                        JSON Estructurado
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setImportFormat('csv')}
+                        className={`px-3 py-1 text-xs font-semibold rounded-lg border transition-all ${
+                          importFormat === 'csv'
+                            ? 'bg-[#141413] text-white border-[#141413]'
+                            : 'bg-white text-[#5C5B56] border-[#E5E3DC] hover:text-[#141413]'
+                        }`}
+                      >
+                        CSV Tabular
+                      </button>
+                    </div>
+                  </div>
+
+                  <Textarea
+                    value={importRawInput}
+                    onChange={(e) => setImportRawInput(e.target.value)}
+                    placeholder={
+                      importFormat === 'json'
+                        ? '[\n  {\n    "name": "Portal Médico Clínico",\n    "category": "Salud",\n    "tagline": "Citas online",\n    "summary": "Plataforma de pacientes",\n    "thumbnailUrl": "https://..."\n  }\n]'
+                        : 'name,slug,category,tagline,summary,thumbnailUrl\nPortal Médico Clínico,portal-medico,Salud,Citas online,Plataforma de pacientes,https://...'
+                    }
+                    rows={8}
+                    className="font-mono text-xs"
+                  />
+                  <p className="text-[11px] text-[#8A8881]">
+                    Los campos obligatorios son <strong>name</strong>, <strong>category</strong> y <strong>summary</strong>. El resto se completará con valores predeterminados seguros.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* PASO 2: PREVISUALIZACIÓN Y AUDITORÍA FILA A FILA */}
+            {importStep === 'preview' && (
+              <div className="space-y-5">
+                {/* Resumen de Detección */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="bg-[#FBFBF9] p-3 rounded-xl border border-[#E5E3DC]">
+                    <span className="text-[10px] font-bold text-[#8A8881] uppercase block">Filas Detectadas</span>
+                    <span className="text-xl font-black text-[#141413]">{parsedRows.length}</span>
+                  </div>
+                  <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-200">
+                    <span className="text-[10px] font-bold text-emerald-800 uppercase block">Seleccionadas</span>
+                    <span className="text-xl font-black text-emerald-900">
+                      {parsedRows.filter((r) => r.selected).length}
+                    </span>
+                  </div>
+                  <div className="bg-amber-50 p-3 rounded-xl border border-amber-200">
+                    <span className="text-[10px] font-bold text-amber-800 uppercase block">Posibles Duplicados</span>
+                    <span className="text-xl font-black text-amber-900">
+                      {parsedRows.filter((r) => r.isDuplicate).length}
+                    </span>
+                  </div>
+                  <div className="bg-blue-50 p-3 rounded-xl border border-blue-200">
+                    <span className="text-[10px] font-bold text-blue-800 uppercase block">Sugerencias SEO/Img</span>
+                    <span className="text-xl font-black text-blue-900">
+                      {parsedRows.filter((r) => r.imageSuggestions.length > 0).length}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Aviso Editorial */}
+                <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
+                  <Info className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                  <div>
+                    <strong>Garantía de Aislamiento: </strong>
+                    Los proyectos se importarán estrictamente como <strong>BORRADORES NO PUBLICADOS</strong>. La web pública de Lyberate no se alterará hasta que los socios fundadores completen la auditoría de alcance y marquen la atribución como verificada.
+                  </div>
+                </div>
+
+                {/* Acciones de selección global */}
+                <div className="flex items-center justify-between text-xs pt-1">
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => handleSelectAll(true)} className="text-[11px] py-1 px-2.5">
+                      Seleccionar Todos ({parsedRows.length})
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleSelectAll(false)} className="text-[11px] py-1 px-2.5">
+                      Deseleccionar Todos
+                    </Button>
+                  </div>
+                  <span className="text-[#8A8881]">
+                    {parsedRows.filter((r) => r.selected).length} de {parsedRows.length} marcados para importar
+                  </span>
+                </div>
+
+                {/* Tabla de Filas */}
+                <div className="border border-[#E5E3DC] rounded-xl overflow-hidden">
+                  <div className="max-h-72 overflow-y-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead className="bg-[#FBFBF9] sticky top-0 border-b border-[#E5E3DC] text-[#5C5B56] font-semibold">
+                        <tr>
+                          <th className="py-2.5 px-3 w-10 text-center">✓</th>
+                          <th className="py-2.5 px-3">Proyecto & Slug</th>
+                          <th className="py-2.5 px-3">Categoría</th>
+                          <th className="py-2.5 px-3">Imagen & Formato</th>
+                          <th className="py-2.5 px-3">Diagnóstico / SEO</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#F0EFEA]">
+                        {parsedRows.map((row) => (
+                          <tr
+                            key={row.tempId}
+                            className={`hover:bg-[#FDFDFD] transition-colors ${
+                              !row.selected ? 'opacity-50 bg-[#FAF9F5]' : ''
+                            }`}
+                          >
+                            <td className="py-2.5 px-3 text-center">
+                              <input
+                                type="checkbox"
+                                checked={row.selected}
+                                onChange={() => handleToggleRow(row.tempId)}
+                                className="rounded border-[#D1CEBF] text-[#7C3AED] focus:ring-[#7C3AED] cursor-pointer"
+                              />
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <div className="font-bold text-[#141413]">{row.name}</div>
+                              <div className="font-mono text-[10px] text-[#8A8881]">/{row.slug}</div>
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <Badge variant="neutral" size="sm">
+                                {row.category}
+                              </Badge>
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src={row.thumbnailUrl}
+                                  alt={row.thumbnailAlt || row.name}
+                                  className="w-8 h-8 rounded-lg object-cover border border-[#E5E3DC] shrink-0"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src =
+                                      'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=200&q=80';
+                                  }}
+                                />
+                                <div>
+                                  <span className="text-[10px] font-mono font-semibold text-[#5C5B56] block">
+                                    {row.imageFormat}
+                                  </span>
+                                  <span className="text-[9px] text-[#8A8881]">
+                                    {row.thumbnailAlt ? 'Alt text OK' : 'Sin Alt text'}
+                                  </span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-2.5 px-3 max-w-xs">
+                              {row.isDuplicate && (
+                                <span className="inline-flex items-center gap-1 text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 mb-1">
+                                  <AlertTriangle className="w-3 h-3" />
+                                  Slug ya existe en catálogo
+                                </span>
+                              )}
+                              {row.missingFields.length > 0 && (
+                                <span className="inline-flex items-center gap-1 text-[10px] text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 mb-1">
+                                  Faltan: {row.missingFields.join(', ')}
+                                </span>
+                              )}
+                              {row.imageSuggestions.length > 0 && (
+                                <div className="text-[10px] text-[#5C5B56] line-clamp-1" title={row.imageSuggestions.join(' | ')}>
+                                  💡 {row.imageSuggestions[0]}
+                                </div>
+                              )}
+                              {!row.isDuplicate && row.missingFields.length === 0 && (
+                                <span className="text-[10px] text-emerald-700 font-medium">
+                                  ✓ Listo para borrador
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* PASO 3: REPORTE DE RESULTADO */}
+            {importStep === 'result' && (
+              <div className="text-center py-6 space-y-4">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <h4 className="text-lg font-bold text-[#141413]">
+                  ¡Lote importado exitosamente!
+                </h4>
+                <p className="text-xs text-[#5C5B56] max-w-md mx-auto">
+                  Se han agregado <strong>{importStats?.imported}</strong> proyectos en estado <strong>Borrador</strong>. Ninguno se mostrará públicamente hasta que los socios verifiquen el alcance y otorguen la aprobación de atribución.
+                </p>
+
+                <div className="flex justify-center gap-3 pt-4">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="bg-[#7C3AED] hover:bg-[#6D28D9]"
+                    onClick={() => {
+                      setFilterState('draft');
+                      handleCloseImportModal();
+                    }}
+                  >
+                    Filtrar y Ver Borradores ({importStats?.imported})
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleCloseImportModal}>
+                    Cerrar Asistente
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </Dialog>
+      )}
     </div>
   );
 };

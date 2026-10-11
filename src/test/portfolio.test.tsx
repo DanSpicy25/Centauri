@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { projectRepository } from '../repositories/projectRepository';
+import { describe, it, expect, vi } from 'vitest';
+import { ProjectRepository, projectRepository } from '../repositories/projectRepository';
 import { WorksPage } from '../pages/public/WorksPage';
 import { ProjectDetailPage } from '../pages/public/ProjectDetailPage';
 
@@ -20,6 +20,56 @@ describe('FASE 03 — Portafolio, Carrusel y Casos de Estudio', () => {
     expect(draft?.editorialState).toBe('draft');
     expect(draft?.attributionApproved).toBe(false);
     expect(draft?.published).toBe(false);
+  });
+
+  it('actualiza textos públicos de muestra obsoletos guardados y mantiene los datos editados', () => {
+    const storedValues = new Map<string, string>();
+    const memoryStorage = {
+      getItem: (key: string) => storedValues.get(key) ?? null,
+      setItem: (key: string, value: string) => storedValues.set(key, value),
+      removeItem: (key: string) => storedValues.delete(key),
+      clear: () => storedValues.clear(),
+      key: (index: number) => [...storedValues.keys()][index] ?? null,
+      get length() {
+        return storedValues.size;
+      },
+    };
+    vi.stubGlobal('window', { localStorage: memoryStorage });
+    vi.stubGlobal('localStorage', memoryStorage);
+    const sagitta = projectRepository.getProjectById('proj-01')!;
+    storedValues.set(
+      'lyberate_cms_projects',
+      JSON.stringify([
+        {
+          ...sagitta,
+          name: 'Nombre personalizado',
+          tagline: 'Plataforma componible para gestión operativa y comercial multi-vertical',
+          summary: 'Sistema empresarial modular con punto de venta (POS), control de inventario, recetas BOM, CRM dinámico y motor de marca blanca con terminología adaptable.',
+          thumbnailCredit: 'Captura autorizada de la suite de software propio',
+          gallery: [
+            {
+              ...sagitta.gallery![0],
+              alt: 'Módulo de control de inventario y recetas BOM de Sagitta',
+              caption: 'Control de inventario en tiempo real con alertas de stock mínimo.',
+            },
+          ],
+        },
+      ])
+    );
+
+    try {
+      const migratedRepository = new ProjectRepository();
+      const migratedSagitta = migratedRepository.getProjectById('proj-01');
+      expect(migratedSagitta?.tagline).toBe('Ventas, inventario y operación diaria en un solo lugar');
+      expect(migratedSagitta?.summary).toContain('herramienta de gestión');
+      expect(migratedSagitta?.thumbnailCredit).toBe('Proyecto propio de Lyberate');
+      expect(migratedSagitta?.name).toBe('Nombre personalizado');
+      expect(migratedSagitta?.gallery?.[0].caption).toBe(
+        'Avisos de existencias para ayudar a mantener el inventario al día.'
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('el carrusel de Inicio solo debe recibir proyectos aprobados con flag isFeatured', () => {
@@ -48,10 +98,9 @@ describe('FASE 03 — Portafolio, Carrusel y Casos de Estudio', () => {
     expect(orgemac?.lyberateContribution).toBeDefined();
   });
 
-  it('debe soportar filtrado multi-criterio y búsqueda por tecnología', () => {
-    // Búsqueda por tecnología 'TypeScript'
-    const tsProjects = projectRepository.filterProjects({ searchTerm: 'TypeScript' });
-    expect(tsProjects.length).toBeGreaterThanOrEqual(2);
+  it('debe soportar filtrado multi-criterio y búsqueda en lenguaje de negocio', () => {
+    const inventoryProjects = projectRepository.filterProjects({ searchTerm: 'inventario' });
+    expect(inventoryProjects.length).toBeGreaterThanOrEqual(1);
 
     // Filtro por relación 'own'
     const ownProjects = projectRepository.filterProjects({ relationship: 'own' });
@@ -99,4 +148,3 @@ describe('FASE 03 — Portafolio, Carrusel y Casos de Estudio', () => {
     expect(ProjectDetailPage).toBeDefined();
   });
 });
-

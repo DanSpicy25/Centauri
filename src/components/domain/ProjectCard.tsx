@@ -61,7 +61,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, featured = fa
       <div className={`p-5 flex flex-col justify-between flex-1 ${featured ? 'md:col-span-5 md:p-6' : ''}`}>
         <div>
           <div className="flex items-start justify-between gap-3 mb-2">
-            <h3 className="text-lg font-bold text-[#141413] tracking-tight group-hover:text-[#C85A32] transition-colors">
+            <h3 className="text-lg font-bold text-[#141413] tracking-tight group-hover:text-[#7C3AED] transition-colors">
               {project.name}
             </h3>
             {project.publicUrl && (
@@ -77,34 +77,15 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, featured = fa
             )}
           </div>
 
-          <p className="text-xs font-medium text-[#C85A32] mb-2">{project.tagline}</p>
+          <p className="text-xs font-medium text-[#7C3AED] mb-2">{project.tagline}</p>
           <p className="text-xs text-[#5C5B56] line-clamp-3 leading-relaxed mb-4">{project.summary}</p>
 
-          <div className="mb-4">
-            <span className="text-[11px] font-semibold text-[#8A8881] uppercase tracking-wider block mb-1">
-              Aporte de Lyberate:
-            </span>
-            <p className="text-xs text-[#141413] font-medium leading-normal bg-[#FBFBF9] p-2 rounded border border-[#E5E3DC]">
-              {project.lyberateContribution}
-            </p>
-          </div>
         </div>
 
         <div>
-          <div className="flex flex-wrap gap-1.5 pt-3 border-t border-[#F0EFEA] mb-4">
-            {project.verifiedTechnologies.map((tech) => (
-              <span
-                key={tech}
-                className="text-[11px] font-medium text-[#5C5B56] bg-[#F5F4EF] px-2 py-0.5 rounded"
-              >
-                {tech}
-              </span>
-            ))}
-          </div>
-
           <Link
             to={`/trabajos/${project.slug}`}
-            className="inline-flex items-center text-xs font-semibold text-[#141413] hover:text-[#C85A32] transition-colors gap-1 group/link"
+            className="site-link inline-flex items-center text-xs font-semibold text-[#141413] hover:text-[#7C3AED] transition-colors gap-1 group/link"
           >
             <span>Ver caso de estudio</span>
             <span className="transition-transform group-hover/link:translate-x-0.5" aria-hidden="true">→</span>

@@ -448,6 +448,78 @@ export class SiteRepository {
   }
 
   /**
+   * Simula un escenario operativo para demostración frontend:
+   * 'available': 200 OK (~110ms)
+   * 'slow': 200 OK (~850ms, degradado)
+   * 'error': 503 Fallo de servicio (~45ms, caído)
+   * 'recovered': 200 OK (~95ms, recuperado)
+   */
+  simulateScenario(siteId: string, scenario: 'available' | 'slow' | 'error' | 'recovered'): SiteHealthCheckLog {
+    const site = this.getSiteById(siteId);
+    if (!site) throw new Error(`Sitio ${siteId} no encontrado.`);
+
+    let statusCode = 200;
+    let status: ManagedSiteDTO['status'] = 'online';
+    let latency = 110;
+    let message = 'Respuesta óptima HTTP 200 OK (Escenario: Disponible)';
+
+    switch (scenario) {
+      case 'available':
+        statusCode = 200;
+        status = 'online';
+        latency = 115;
+        message = 'Respuesta óptima HTTP 200 OK (Escenario: Disponible)';
+        break;
+      case 'slow':
+        statusCode = 200;
+        status = 'degraded';
+        latency = 860;
+        message = 'Alerta de latencia alta detectada (Escenario: Lento / Degradado)';
+        break;
+      case 'error':
+        statusCode = 503;
+        status = 'offline';
+        latency = 45;
+        message = 'Fallo crítico de servicio: 503 Service Unavailable (Escenario: Caído)';
+        break;
+      case 'recovered':
+        statusCode = 200;
+        status = 'online';
+        latency = 95;
+        message = 'Servicio restablecido satisfactoriamente tras incidente (Escenario: Recuperado)';
+        break;
+    }
+
+    const logEntry: SiteHealthCheckLog = {
+      id: `log-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
+      siteId,
+      timestamp: new Date().toISOString(),
+      statusCode,
+      latencyMs: latency,
+      status,
+      message,
+    };
+
+    const currentLogs = this.logs.get(siteId) || [];
+    currentLogs.unshift(logEntry);
+    if (currentLogs.length > 30) currentLogs.pop();
+    this.logs.set(siteId, currentLogs);
+
+    this.updateSite(siteId, {
+      status,
+      statusCode,
+      lastLatencyMs: latency,
+      lastCheckedAt: new Date().toISOString(),
+    });
+
+    this.saveToStorage('lyberate_site_logs', JSON.stringify(Object.fromEntries(this.logs)));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('lyberate-sites-update'));
+    }
+    return logEntry;
+  }
+
+  /**
    * Obtiene la lista de incidentes.
    */
   getIncidents(): SiteIncidentEvent[] {

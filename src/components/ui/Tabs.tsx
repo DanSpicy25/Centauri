@@ -27,12 +27,12 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className
               id={`tab-${tab.id}`}
               onClick={() => onChange(tab.id)}
               className={`pb-2.5 text-sm font-medium transition-all duration-150 active:scale-[0.98] relative cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2
-                ${isActive ? 'text-[#C85A32]' : 'text-[#5C5B56] hover:text-[#141413]'}`}
+                ${isActive ? 'text-[#7C3AED]' : 'text-[#5C5B56] hover:text-[#141413]'}`}
             >
               {tab.label}
               {isActive && (
                 <span
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C85A32] rounded-full animate-fade-in"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#7C3AED] rounded-full animate-fade-in"
                   aria-hidden="true"
                 />
               )}

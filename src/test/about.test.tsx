@@ -10,7 +10,7 @@ describe('Fase 03 — Sobre Nosotros & Socios Fundadores', () => {
     const valdez = profileRepository.getProfileById('valdez');
     expect(valdez).toBeDefined();
     expect(valdez?.name).toBe('Valdez');
-    expect(valdez?.roleTitle).toContain('Arquitecto de Software');
+    expect(valdez?.roleTitle).toContain('desarrollo digital');
     expect(valdez?.specialties.length).toBeGreaterThan(3);
     expect(valdez?.email).toContain('valdez@');
 

@@ -18,7 +18,7 @@ export const tokens = {
     // Bordes & Separadores (Controlados, sin líneas duras artificiales)
     border: '#E5E3DC',
     borderStrong: '#D1CEBF',
-    borderFocus: '#C85A32',
+    borderFocus: '#7C3AED',
 
     // Tipografía & Contrastes (Mínimo 7:1 en texto principal)
     textMain: '#141413',        // Carbón profundo
@@ -26,14 +26,14 @@ export const tokens = {
     textMuted: '#7D7A73',       // Tono neutro accesible (contraste > 4.6:1)
     textInverse: '#FFFFFF',
 
-    // Identidad de Marca (Terracota Cobrizo / Cuero refinado)
+    // Identidad de Marca (Púrpura Imperial Lyberate)
     brand: {
-      primary: '#C85A32',       // Terracota principal (contraste 4.8:1 sobre blanco, 4.6:1 sobre canvas)
-      primaryHover: '#B34E2A',
-      primaryActive: '#9A4122',
-      accent: '#E07A5F',        // Acento melocotón tostado
-      surface: '#FBF1EC',       // Fondo tenue para estados de marca
-      border: '#F3D7CA',
+      primary: '#7C3AED',       // Púrpura insignia Lyberate
+      primaryHover: '#6D28D9',
+      primaryActive: '#5B21B6',
+      accent: '#A78BFA',        // Acento amatista luminoso
+      surface: '#F5F3FF',       // Fondo tenue para estados de marca
+      border: '#DDD6FE',
     },
 
     // Semántica & Estados de Feedback (Con alto contraste sin estridencias)
@@ -75,8 +75,8 @@ export const tokens = {
 
   typography: {
     fonts: {
-      heading: "'Playfair Display', Georgia, serif",
-      body: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
+      heading: "'Newsreader', Georgia, serif",
+      body: "'Instrument Sans', system-ui, -apple-system, sans-serif",
       mono: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
     },
     sizes: {
@@ -170,4 +170,3 @@ export const tokens = {
 } as const;
 
 export type DesignTokens = typeof tokens;
-

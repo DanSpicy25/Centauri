@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import {
   ArrowRight,
   Sparkles,
-  Code2,
-  Cpu,
+  MonitorSmartphone,
+  Workflow,
   ShieldCheck,
   CheckCircle2,
   Layers,
@@ -16,13 +16,15 @@ import { Button } from '../../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../components/ui/Card';
 import { SectionHeader } from '../../components/layout/SectionHeader';
 import { ProjectCarousel } from '../../components/domain/ProjectCarousel';
-import { EcosystemVisualizer } from '../../components/domain/EcosystemVisualizer';
 import { projectRepository } from '../../repositories/projectRepository';
 import { cmsRepository } from '../../repositories/cmsRepository';
 import { FIXTURE_SERVICES, FIXTURE_PRODUCTS } from '../../data/fixtures';
 
 export const HomePage: React.FC = () => {
   const featuredProjects = projectRepository.getFeaturedProjects();
+  const showcaseProject =
+    featuredProjects.find((project) => project.slug === 'motoindy') || featuredProjects[0];
+  const showcaseHref = showcaseProject ? `/trabajos/${showcaseProject.slug}` : '/trabajos';
   const cmsContent = cmsRepository.getPageContent('home');
 
   useEffect(() => {
@@ -37,182 +39,184 @@ export const HomePage: React.FC = () => {
   };
 
   const hero = cmsContent.hero || {
-    eyebrow: 'Estudio de Ingeniería & Arquitectura de Software',
-    headline: 'Software con criterio, arquitectura sólida y presencia memorable.',
+    eyebrow: 'Soluciones digitales hechas para personas y negocios',
+    headline: 'Tu negocio merece herramientas que trabajen contigo.',
     description:
-      'Construimos plataformas digitales, sistemas de gestión y productos web para organizaciones que valoran la claridad visual, el alto rendimiento y la independencia tecnológica.',
+      'Organiza mejor el trabajo, atiende a tus clientes con más calma y guarda tiempo para crecer.',
     primaryCtaText: 'Conversar sobre tu proyecto',
     primaryCtaLink: '/contacto',
     secondaryCtaText: 'Explorar trabajos y casos',
     secondaryCtaLink: '/trabajos',
-    badges: ['React 19 + TypeScript', 'Accesibilidad WCAG universal', 'Arquitectura desacoplada'],
+    badges: ['Acompañamiento directo', 'Diseño pensado para personas', 'Soluciones a medida'],
   };
 
   return (
-    <div className="space-y-24 sm:space-y-32 pb-24">
-      {/* 1. Hero Section con Composición Editorial Propia */}
+    <div className="home-page space-y-24 sm:space-y-32 pb-24">
+      {/* 1. Hero editorial con una vitrina visual en movimiento */}
       {isSectionVisible('hero') && (
-        <section className="relative pt-16 sm:pt-24 pb-16 overflow-hidden bg-subtle-mesh border-b border-[#E5E3DC]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-              {/* Headline y Propuesta de Valor (col-span-7) */}
-              <div className="lg:col-span-7 space-y-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5F4EF] border border-[#E5E3DC] text-xs font-semibold text-[#C85A32]">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>{hero.eyebrow}</span>
-                </div>
-
-                <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-[#141413] leading-[1.08] font-editorial-heading">
-                  {hero.headline}
-                </h1>
-
-                <p className="text-base sm:text-lg text-[#5C5B56] leading-relaxed max-w-2xl font-editorial-body">
-                  {hero.description}
-                </p>
-
-                <div className="flex flex-wrap gap-4 pt-2">
-                  <Link to={hero.primaryCtaLink}>
-                    <Button size="lg" variant="primary">
-                      {hero.primaryCtaText}
-                    </Button>
-                  </Link>
-                  <Link to={hero.secondaryCtaLink}>
-                    <Button size="lg" variant="outline">
-                      {hero.secondaryCtaText}
-                    </Button>
-                  </Link>
-                </div>
-
-                {/* Franja de confianza técnica verificada */}
-                <div className="pt-6 border-t border-[#E5E3DC] flex flex-wrap gap-6 text-xs text-[#5C5B56]">
-                  {hero.badges.map((badge, idx) => {
-                    const colors = ['bg-emerald-500', 'bg-[#C85A32]', 'bg-[#141413]'];
-                    return (
-                      <div key={badge} className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${colors[idx % colors.length]}`} />
-                        <span>{badge}</span>
-                      </div>
-                    );
-                  })}
-                </div>
+        <section className="home-hero relative isolate overflow-hidden">
+          <div className="home-hero-orb home-hero-orb-one" aria-hidden="true" />
+          <div className="home-hero-orb home-hero-orb-two" aria-hidden="true" />
+          <div className="home-hero-grain" aria-hidden="true" />
+          <div className="relative mx-auto grid min-h-[min(780px,calc(100svh-4.5rem))] max-w-[1440px] grid-cols-1 items-center gap-12 px-5 py-20 sm:px-10 lg:grid-cols-[1.02fr_0.98fr] lg:gap-8 lg:px-16 xl:px-24">
+            <div className="home-hero-copy relative z-10 max-w-3xl" data-reveal>
+              <div className="home-eyebrow">
+                <span className="home-eyebrow-dot" />
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>{hero.eyebrow}</span>
               </div>
-
-              {/* Composición Gráfica Editorial de Marca (col-span-5) */}
-              <div className="lg:col-span-5 relative">
-                <div className="relative mx-auto max-w-md bg-white p-6 rounded-3xl border border-[#E5E3DC] shadow-[0_12px_40px_rgba(20,20,19,0.06)] space-y-5">
-                  <div className="flex items-center justify-between pb-3 border-b border-[#F0EFEA]">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-[#C85A32]" />
-                      <div className="w-3 h-3 rounded-full bg-[#D1CEBF]" />
-                      <div className="w-3 h-3 rounded-full bg-[#E5E3DC]" />
-                    </div>
-                    <span className="text-[11px] font-mono text-[#8A8881]">lyberate.ecosystem.v2</span>
+              <h1 className="mt-8 max-w-3xl text-[clamp(3rem,6.6vw,6.35rem)] font-medium leading-[0.94] tracking-[-0.065em] text-[#FBF8F2] font-editorial-heading">
+                {hero.headline}
+              </h1>
+              <p className="mt-7 max-w-xl text-base leading-7 text-[#E5DDD1]/80 sm:text-lg sm:leading-8">
+                {hero.description}
+              </p>
+              <div className="mt-9 flex flex-wrap items-center gap-3">
+                <Link to={hero.primaryCtaLink}>
+                  <Button size="lg" variant="primary" className="home-hero-primary btn-press">
+                    {hero.primaryCtaText}
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Button>
+                </Link>
+                <Link
+                  to={hero.secondaryCtaLink}
+                  className="home-hero-secondary group inline-flex min-h-12 items-center gap-2 rounded-full px-5 text-sm font-semibold text-white/85 transition-all duration-300 hover:bg-white/10 hover:text-white"
+                >
+                  {hero.secondaryCtaText}
+                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </Link>
+              </div>
+              <div className="mt-12 flex flex-wrap gap-x-7 gap-y-3 border-t border-white/15 pt-6 text-xs text-[#E5DDD1]/70">
+                {hero.badges.map((badge) => (
+                  <div key={badge} className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[#E9A17F]" />
+                    <span>{badge}</span>
                   </div>
-
-                  <div className="space-y-3 font-mono text-xs">
-                    <Link
-                      to="/trabajos/sagitta"
-                      className="block p-3.5 bg-[#FBFBF9] rounded-xl border border-[#E5E3DC] hover:border-[#C85A32] transition-colors group"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#8A8881] text-[10px] uppercase font-bold">Plataforma Componible</span>
-                        <ArrowRight className="w-3 h-3 text-[#8A8881] group-hover:text-[#C85A32] transition-transform group-hover:translate-x-0.5" />
-                      </div>
-                      <span className="text-[#141413] font-semibold block mt-0.5">Sagitta Enterprise Engine</span>
-                      <span className="text-emerald-700 block text-[11px] mt-0.5 font-sans">
-                        ✓ Módulos conmutables, POS & inventario BOM
-                      </span>
-                    </Link>
-
-                    <Link
-                      to="/trabajos/contacto-con-la-noticia"
-                      className="block p-3.5 bg-[#FBFBF9] rounded-xl border border-[#E5E3DC] hover:border-[#C85A32] transition-colors group"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#8A8881] text-[10px] uppercase font-bold">Portal Periodístico</span>
-                        <ArrowRight className="w-3 h-3 text-[#8A8881] group-hover:text-[#C85A32] transition-transform group-hover:translate-x-0.5" />
-                      </div>
-                      <span className="text-[#141413] font-semibold block mt-0.5">Contacto con la Noticia</span>
-                      <span className="text-emerald-700 block text-[11px] mt-0.5 font-sans">
-                        ✓ PWA sin conexión & redacción en tiempo real
-                      </span>
-                    </Link>
-
-                    <div className="p-3.5 bg-[#FBFBF9] rounded-xl border border-[#E5E3DC]">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#8A8881] text-[10px] uppercase font-bold">Atención & Chat SaaS</span>
-                        <span className="text-amber-700 text-[10px] font-bold">BETA</span>
-                      </div>
-                      <span className="text-[#141413] font-semibold block mt-0.5">LyberateDesk / Chat</span>
-                      <span className="text-emerald-700 block text-[11px] mt-0.5 font-sans">
-                        ✓ WhatsApp multicanal & respuestas directas
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-[#F5F4EF] text-center text-xs text-[#5C5B56] font-sans flex items-center justify-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                    <span>Sistemas auditados y verificados en código.</span>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
+
+            <div className="home-showcase relative mx-auto w-full max-w-[610px]" data-reveal>
+              <div className="home-showcase-halo" aria-hidden="true" />
+              <div className="home-showcase-image-wrap">
+                <img
+                  src={showcaseProject?.thumbnailUrl}
+                  alt={showcaseProject?.thumbnailAlt || 'Vista de un proyecto desarrollado por Lyberate'}
+                  className="home-showcase-image"
+                />
+                <div className="home-showcase-image-shade" />
+                <div className="home-showcase-topline">
+                  <span className="home-showcase-mark"><span /> Lyberate / Estudio</span>
+                  <span className="home-showcase-index">01 — 03</span>
+                </div>
+                <div className="home-showcase-caption">
+                  <span className="home-showcase-overline">HECHO PARA EL DÍA A DÍA</span>
+                  <h2>{showcaseProject?.name || 'Ideas que toman forma'}</h2>
+                  <p>Una experiencia pensada alrededor de las personas que la utilizan.</p>
+                </div>
+              </div>
+              <Link to={showcaseHref} className="home-float-card home-float-card-primary group">
+                <span className="home-float-icon"><Globe className="h-5 w-5" /></span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[10px] font-semibold uppercase tracking-[0.15em] text-[#827B71]">Movilidad</span>
+                  <span className="mt-1 block text-sm font-semibold text-[#201F1D]">Viajes y entregas</span>
+                </span>
+                <ArrowRight className="h-4 w-4 text-[#9A4122] transition-transform group-hover:translate-x-1" />
+              </Link>
+              <div className="home-float-card home-float-card-secondary">
+                <span className="home-float-icon home-float-icon-green"><MessageSquare className="h-4 w-4" /></span>
+                <span>
+                  <span className="block text-[10px] font-semibold uppercase tracking-[0.15em] text-[#827B71]">Seguimiento</span>
+                  <span className="mt-1 block text-sm font-semibold text-[#201F1D]">Todo en movimiento</span>
+                </span>
+              </div>
+              <div className="home-showcase-stamp" aria-hidden="true">
+                <span>MENOS<br />RUIDO</span>
+                <span className="home-stamp-rule" />
+                <span>MÁS<br />CLARIDAD</span>
+              </div>
+            </div>
+          </div>
+          <div className="home-hero-bottom" aria-hidden="true">
+            <span>LYBERATE DIGITAL STUDIO</span>
+            <span>DISEÑO · PRODUCTO · ACOMPAÑAMIENTO</span>
+            <span>01 / 04</span>
           </div>
         </section>
       )}
 
-      {/* 2. Visualización Interactiva del Ecosistema (Master Contract Sección 7) */}
+      {/* 2. Forma de trabajo explicada sin jerga técnica */}
       {isSectionVisible('ecosystem') && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <EcosystemVisualizer />
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" data-reveal>
+          <SectionHeader
+            eyebrow="Un proceso claro"
+            title="De una necesidad concreta a una solución que funciona"
+            description="Trabajamos contigo en cada paso, con acuerdos claros y avances que puedes revisar."
+          />
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              { number: '01', title: 'Te escuchamos', body: 'Entendemos cómo trabajas, qué te está costando tiempo y qué quieres mejorar.', icon: MessageSquare },
+              { number: '02', title: 'Trazamos el camino', body: 'Acordamos prioridades, alcance y próximos pasos antes de empezar.', icon: Workflow },
+              { number: '03', title: 'Lo construimos contigo', body: 'Revisas los avances y nos das tu opinión durante todo el proceso.', icon: MonitorSmartphone },
+            ].map(({ number, title, body, icon: Icon }) => (
+              <article key={number} className="home-process-card group rounded-3xl border border-[#E5E3DC] bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#D1CEBF] hover:shadow-lg">
+                <div className="flex items-center justify-between">
+                  <span className="font-editorial-heading text-3xl text-[#7C3AED]">{number}</span>
+                  <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#F5F3FF] text-[#7C3AED] transition-colors group-hover:bg-[#EDE9FE]"><Icon className="h-5 w-5" /></span>
+                </div>
+                <h3 className="mt-6 text-lg font-semibold text-[#141413]">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#5C5B56]">{body}</p>
+              </article>
+            ))}
+          </div>
         </section>
       )}
 
       {/* 3. Carrusel / Vitrina de Proyectos Integrado en Inicio */}
       {isSectionVisible('carousel') && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
             <SectionHeader
               eyebrow="Vitrina de Trabajos"
               title="Sistemas y proyectos destacados"
-              description="Explora desarrollos reales con rotación automática de 5s, pausa inteligente y alternador entre beneficios para el negocio y ficha técnica."
+              description="Conoce proyectos y soluciones pensados para resolver necesidades reales."
               className="mb-0"
             />
             <Link
               to="/trabajos"
-              className="inline-flex items-center text-xs font-bold text-[#C85A32] hover:underline gap-1 shrink-0"
+              className="inline-flex items-center text-xs font-bold text-[#7C3AED] hover:underline gap-1 shrink-0"
             >
               <span>Ver catálogo completo</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          {/* Carrusel interactivo con 5s auto-play y barra iOS */}
+          {/* Carrusel manual, accesible y sin cambios inesperados */}
           <ProjectCarousel projects={featuredProjects} />
         </section>
       )}
 
       {/* 4. Qué podemos construir (Servicios Principales) */}
       {isSectionVisible('services') && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
           <SectionHeader
-            eyebrow="Qué construimos"
-            title="Capacidades y soluciones de software"
-            description="Enfoque riguroso centrado en resolver problemas operativos reales sin añadir dependencias frágiles ni costes ocultos."
+            eyebrow="En qué podemos ayudarte"
+            title="Soluciones para hacer avanzar tu negocio"
+            description="Herramientas prácticas, fáciles de usar y pensadas para acompañar la forma en que ya trabajas."
           />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {FIXTURE_SERVICES.map((service, index) => {
-              const icons = [Code2, Cpu, ShieldCheck];
+              const icons = [MonitorSmartphone, Workflow, ShieldCheck];
               const Icon = icons[index % icons.length];
               return (
                 <Card
                   key={service.id}
                   variant="default"
-                  className="flex flex-col justify-between hover:border-[#D1CEBF] transition-colors"
+                  className="home-reveal-card flex flex-col justify-between hover:border-[#D1CEBF] transition-colors"
                 >
                   <CardHeader>
-                    <div className="w-10 h-10 rounded-xl bg-[#F5F4EF] flex items-center justify-center text-[#C85A32] mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-[#F5F3FF] flex items-center justify-center text-[#7C3AED] mb-4">
                       <Icon className="w-5 h-5" />
                     </div>
                     <CardTitle className="text-lg font-bold text-[#141413]">
@@ -238,7 +242,7 @@ export const HomePage: React.FC = () => {
                       <ul className="space-y-1 text-xs text-[#141413]">
                         {service.typicalDeliverables.slice(0, 3).map((item) => (
                           <li key={item} className="flex items-center gap-1.5">
-                            <span className="w-1 h-1 rounded-full bg-[#C85A32]" />
+                            <span className="w-1 h-1 rounded-full bg-[#7C3AED]" />
                             <span>{item}</span>
                           </li>
                         ))}
@@ -250,7 +254,7 @@ export const HomePage: React.FC = () => {
                     <span className="text-[11px] text-[#8A8881]">Presupuesto con alcance claro</span>
                     <Link
                       to="/contacto"
-                      className="text-xs font-semibold text-[#C85A32] hover:underline inline-flex items-center gap-1"
+                      className="text-xs font-semibold text-[#7C3AED] hover:underline inline-flex items-center gap-1"
                     >
                       <span>Consultar</span>
                       <ArrowRight className="w-3 h-3" />
@@ -265,11 +269,11 @@ export const HomePage: React.FC = () => {
 
       {/* 5. Presentación de Productos Propios (Distintos de servicios de cliente) */}
       {isSectionVisible('products') && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
           <SectionHeader
-            eyebrow="Productos Propios"
-            title="Plataformas desarrolladas por Lyberate"
-            description="Software propio concebido para resolver necesidades comerciales especializadas, disponible para implementación o suscripción."
+            eyebrow="Productos propios"
+            title="Herramientas desarrolladas por Lyberate"
+            description="Soluciones creadas para resolver necesidades concretas, con opciones que se ajustan al día a día de tu equipo."
           />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -278,15 +282,15 @@ export const HomePage: React.FC = () => {
               return (
                 <div
                   key={prod.id}
-                  className="bg-white rounded-3xl border border-[#E5E3DC] p-7 flex flex-col justify-between hover:border-[#D1CEBF] transition-colors relative"
+                  className="home-reveal-card bg-white rounded-3xl border border-[#E5E3DC] p-7 flex flex-col justify-between hover:border-[#D1CEBF] transition-colors relative"
                 >
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-bold text-[#C85A32] uppercase tracking-widest bg-[#F5F4EF] px-2.5 py-1 rounded-full border border-[#E5E3DC]">
+                      <span className="text-[10px] font-mono font-bold text-[#7C3AED] uppercase tracking-widest bg-[#F5F3FF] px-2.5 py-1 rounded-full border border-purple-200">
                         {isDesk ? 'PRODUCTO SAAS' : 'PRODUCTO ACTIVO'}
                       </span>
                       {isDesk ? (
-                        <MessageSquare className="w-4 h-4 text-[#C85A32]" />
+                        <MessageSquare className="w-4 h-4 text-[#7C3AED]" />
                       ) : (
                         <Layers className="w-4 h-4 text-[#5C5B56]" />
                       )}
@@ -296,7 +300,7 @@ export const HomePage: React.FC = () => {
                       <h3 className="text-xl font-bold text-[#141413] font-editorial-heading">
                         {prod.name}
                       </h3>
-                      <p className="text-xs font-semibold text-[#C85A32] mt-0.5">{prod.tagline}</p>
+                      <p className="text-xs font-semibold text-[#7C3AED] mt-0.5">{prod.tagline}</p>
                     </div>
 
                     <p className="text-xs text-[#5C5B56] leading-relaxed">{prod.summary}</p>
@@ -322,7 +326,7 @@ export const HomePage: React.FC = () => {
                         </Button>
                       </Link>
                     )}
-                    {prod.ctaUrl && (
+                    {prod.ctaUrl && !prod.ctaUrl.includes('github.com') && (
                       <a
                         href={prod.ctaUrl}
                         target="_blank"
@@ -348,17 +352,17 @@ export const HomePage: React.FC = () => {
 
       {/* 6. Proceso de Trabajo y Metodología */}
       {isSectionVisible('process') && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
           <div className="bg-[#141413] text-white rounded-3xl p-8 sm:p-12 shadow-xl">
             <div className="max-w-2xl mb-10">
-              <span className="text-xs font-bold uppercase tracking-widest text-[#E07A5F] mb-2 block">
+              <span className="text-xs font-bold uppercase tracking-widest text-[#A78BFA] mb-2 block">
                 Metodología de Trabajo
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-editorial-heading">
                 Cómo trabajamos de principio a fin
               </h2>
               <p className="text-xs sm:text-sm text-[#8A8881] mt-2 leading-relaxed">
-                Un proceso riguroso donde cada decisión técnica se justifica, se prueba con datos reales y se documenta para garantizar autonomía a largo plazo.
+                Un proceso claro, con decisiones conversadas y avances que puedes revisar a lo largo del proyecto.
               </p>
             </div>
 
@@ -367,32 +371,32 @@ export const HomePage: React.FC = () => {
                 cmsContent.processSteps || [
                   {
                     step: '01',
-                    title: 'Auditoría & Alcance',
+                    title: 'Te escuchamos',
                     description:
-                      'Examinamos los requisitos reales, limitaciones operativas y modelos de datos antes de comprometer líneas de código.',
+                      'Entendemos tus objetivos, prioridades y la forma en que trabaja tu equipo.',
                   },
                   {
                     step: '02',
-                    title: 'Arquitectura & Sistema',
+                    title: 'Trazamos el camino',
                     description:
-                      'Diseñamos tokens tipográficos, contratos de datos tipados y bases de componentes accesibles para máxima velocidad.',
+                      'Acordamos una solución a medida, con alcance claro y próximos pasos definidos.',
                   },
                   {
                     step: '03',
-                    title: 'Construcción Modular',
+                    title: 'Lo construimos contigo',
                     description:
-                      'Desarrollamos por fases independientes y comprobables con suites de prueba automatizadas en cada entrega.',
+                      'Compartimos avances para que puedas revisar y opinar durante el proceso.',
                   },
                   {
                     step: '04',
-                    title: 'Auditoría & Despliegue',
+                    title: 'Te acompañamos',
                     description:
-                      'Revisiones de seguridad CSP, rendimiento Core Web Vitals y verificación de accesibilidad antes de publicar.',
+                      'Te ayudamos a poner en marcha la solución y resolver tus dudas.',
                   },
                 ]
               ).map((item) => (
                 <div key={item.step} className="p-6 rounded-2xl bg-[#201F1D] border border-[#2A2926]">
-                  <span className="text-2xl font-mono font-bold text-[#E07A5F] block mb-2">{item.step}</span>
+                  <span className="text-2xl font-mono font-bold text-[#A78BFA] block mb-2">{item.step}</span>
                   <h4 className="text-sm font-bold text-white mb-1.5">{item.title}</h4>
                   <p className="text-xs text-[#8A8881] leading-relaxed">{item.description}</p>
                 </div>
@@ -406,7 +410,7 @@ export const HomePage: React.FC = () => {
       {isSectionVisible('cta') && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="max-w-2xl mx-auto space-y-5 bg-white p-8 sm:p-12 rounded-3xl border border-[#E5E3DC] shadow-[0_12px_40px_rgba(20,20,19,0.04)]">
-            <div className="w-12 h-12 rounded-2xl bg-[#F5F4EF] text-[#C85A32] flex items-center justify-center mx-auto">
+            <div className="w-12 h-12 rounded-2xl bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center mx-auto">
               <Globe className="w-6 h-6" />
             </div>
             <h2 className="text-3xl font-extrabold tracking-tight text-[#141413] font-editorial-heading">
@@ -414,7 +418,7 @@ export const HomePage: React.FC = () => {
             </h2>
             <p className="text-sm text-[#5C5B56] leading-relaxed max-w-xl mx-auto">
               {cmsContent.ctaDescription ||
-                'Hablemos con honestidad sobre alcance, viabilidad técnica y soluciones prácticas. Sin presiones comerciales ni presupuestos opacos.'}
+                'Hablemos con honestidad sobre lo que necesitas, las opciones disponibles y los próximos pasos. Sin presiones ni presupuestos opacos.'}
             </p>
             <div className="pt-2">
               <Link to="/contacto">

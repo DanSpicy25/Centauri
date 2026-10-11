@@ -1,6 +1,49 @@
 import { ProjectDTO, ProjectRelationship } from '../types';
 import { FIXTURE_PROJECTS } from '../data/fixtures';
 
+const LEGACY_PUBLIC_COPY: Record<string, {
+  tagline?: string;
+  summary?: string;
+  category?: string;
+  thumbnailCredit?: string;
+  gallery?: Array<{ alt?: string; caption?: string }>;
+}> = {
+  'proj-01': {
+    tagline: 'Plataforma componible para gestión operativa y comercial multi-vertical',
+    summary: 'Sistema empresarial modular con punto de venta (POS), control de inventario, recetas BOM, CRM dinámico y motor de marca blanca con terminología adaptable.',
+    thumbnailCredit: 'Captura autorizada de la suite de software propio',
+    gallery: [
+      {
+        alt: 'Módulo de control de inventario y recetas BOM de Sagitta',
+        caption: 'Control de inventario en tiempo real con alertas de stock mínimo.',
+      },
+      {
+        alt: 'Vista de Punto de Venta (POS) en Sagitta',
+        caption: 'Interfaz rápida de cobro y asignación de comisiones profesionales.',
+      },
+    ],
+  },
+  'proj-02': {
+    tagline: 'Portal periodístico digital de alto rendimiento y sala de redacción editorial',
+    summary: 'Plataforma CMS multi-tenant diseñada para publicación de noticias en tiempo real con capacidades PWA sin conexión, variantes multimedia optimizadas y distribución de contenidos.',
+    gallery: [
+      {},
+      {
+        alt: 'Soporte PWA sin conexión y caché de artículos',
+        caption: 'Lectura offline garantizada mediante Service Workers dedicados.',
+      },
+    ],
+  },
+  'proj-03': {
+    summary: 'Plataforma que integra pasajeros, conductores y administradores mediante aplicación móvil nativa unificada, panel web centralizado y API con WebSockets.',
+  },
+  'proj-05': {
+    tagline: 'Centro SaaS unificado de atención y mensajería multicanal para ventas',
+    summary: 'Plataforma para gestionar conversaciones de WhatsApp, Telegram y chat web en una sola bandeja de entrada, con respuestas automatizadas y control de agentes.',
+    category: 'SaaS & Mensajería',
+  },
+};
+
 export interface ProjectFilterCriteria {
   category?: string;
   relationship?: ProjectRelationship | 'todos';
@@ -22,7 +65,42 @@ export class ProjectRepository {
         try {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            this.projects = parsed;
+            let migrated = false;
+            this.projects = parsed.map((project: ProjectDTO) => {
+              const legacyCopy = LEGACY_PUBLIC_COPY[project.id];
+              const currentFixture = FIXTURE_PROJECTS.find((fixture) => fixture.id === project.id);
+              if (!legacyCopy || !currentFixture) return project;
+
+              const updated = { ...project };
+              (['tagline', 'summary', 'category', 'thumbnailCredit'] as const).forEach((field) => {
+                if (project[field] === legacyCopy[field]) {
+                  Object.assign(updated, { [field]: currentFixture[field] });
+                  migrated = true;
+                }
+              });
+
+              if (legacyCopy.gallery && updated.gallery && currentFixture.gallery) {
+                updated.gallery = updated.gallery.map((item, index) => {
+                  const legacyGalleryItem = legacyCopy.gallery?.[index];
+                  const currentGalleryItem = currentFixture.gallery?.[index];
+                  if (!legacyGalleryItem || !currentGalleryItem) return item;
+
+                  const currentItem = { ...item };
+                  (['alt', 'caption'] as const).forEach((field) => {
+                    if (
+                      item[field] === legacyGalleryItem[field] &&
+                      currentGalleryItem[field] !== undefined
+                    ) {
+                      currentItem[field] = currentGalleryItem[field];
+                      migrated = true;
+                    }
+                  });
+                  return currentItem;
+                });
+              }
+              return updated;
+            });
+            if (migrated) this.saveToStorage();
           }
         } catch {
           // Mantener inicial si falla parseo
@@ -108,8 +186,7 @@ export class ProjectRepository {
           p.name.toLowerCase().includes(term) ||
           p.summary.toLowerCase().includes(term) ||
           p.tagline.toLowerCase().includes(term) ||
-          p.category.toLowerCase().includes(term) ||
-          p.verifiedTechnologies.some((t) => t.toLowerCase().includes(term))
+          p.category.toLowerCase().includes(term)
       );
     }
 
@@ -206,4 +283,3 @@ export class ProjectRepository {
 
 // Instancia singleton del repositorio para la aplicación
 export const projectRepository = new ProjectRepository();
-

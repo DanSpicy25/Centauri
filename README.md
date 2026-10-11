@@ -1,11 +1,24 @@
 # CENTAURI × LYBERATE — PLATAFORMA DIGITAL INTEGRAL
 ### Core Arquitectónico, Ecosistema Tecnológico y Centro de Control Operativo
 
+> **Estado actual (11 oct 2026):** Centauri es un prototipo frontend con un backend simulado en localStorage. El acceso de `/admin`, PIN, navegador recordado, perfiles y avisos son únicamente demostrativos; no hay verificación de IP, OTP real, autenticación de servidor ni sincronización entre dispositivos. No usar para datos reales. Los contratos para integrar el backend real están en `src/types/backend.ts`.
+>
+> Las descripciones de fases y capacidades más abajo son documentación de alcance y no una garantía de que esos servicios estén desplegados o conectados.
+
+### Acceso administrativo local (solo demostración)
+
+- Cuentas de prueba: `valdez@lyberate.com` (PIN inicial `246810`) y `socio@lyberate.com` (PIN inicial `135790`).
+- Inicia sesión en `/admin`; el PIN se cambia en **Seguridad y configuración**. El navegador puede guardarse como dispositivo recordado.
+- Los perfiles se limitan en la interfaz a la cuenta iniciada. Al guardar cambios se crea un aviso local para el otro socio; funciona en el mismo navegador/origen y no en dispositivos distintos.
+- Las cuentas, los PIN y la lista de navegadores se almacenan en localStorage, y la sesión temporal en sessionStorage. Cualquier persona con acceso a este perfil de navegador puede inspeccionar o alterar estos datos; no trates esto como protección.
+- La identificación de navegador es una marca local, no una huella segura. Una aplicación web no puede leer directamente la IP pública del visitante; la validación OTP/IP, controles reales de acceso y la entrega de notificaciones deben implementarse en el backend.
+- `src/repositories/mockBackendRepository.ts` es la capa temporal que el socio puede sustituir/adaptar al servicio de backend siguiendo los contratos de `src/types/backend.ts`.
+
 > **Marca Comercial Pública:** Lyberate  
 > **Nombre Clave de Arquitectura & Control Room:** Centauri  
 > **Versión de Lanzamiento:** 1.0.0 (Fases 00 a 09 Completadas al 100%)  
 > **Repositorios Oficiales:** [Lyberate-app/Centauri](https://github.com/Lyberate-app/Centauri) · [DanSpicy25/Centauri](https://github.com/DanSpicy25/Centauri)  
-> **Garantía de Calidad:** 14 suites de pruebas unitarias (107 tests pasando), 0 errores TypeScript (`strict`), WCAG 2.1 AA/AAA.
+> **Validación reciente:** 15 suites de pruebas unitarias (115 tests pasando) y compilación TypeScript/Vite exitosa.
 
 ---
 

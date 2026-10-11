@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Send,
   Mail,
@@ -12,6 +12,8 @@ import {
   ShieldAlert,
   Zap,
   Radio,
+  MessageSquare,
+  MessageCircle,
 } from 'lucide-react';
 import {
   automationRepository,
@@ -20,6 +22,8 @@ import {
   WebhookDeliveryLogDTO,
   WorkflowExecutionResult,
 } from '../../repositories/automationRepository';
+import { messagingRepository } from '../../repositories/messagingRepository';
+import { MessageItemDTO } from '../../types/messaging';
 import { crmRepository } from '../../repositories/crmRepository';
 import { profileRepository } from '../../repositories/profileRepository';
 import { Button } from '../../components/ui/Button';
@@ -33,10 +37,13 @@ export const AutomationsHubPage: React.FC = () => {
   const clients = crmRepository.getClients();
   const activeProfile = profileRepository.getActiveProfile();
 
-  const [activeTab, setActiveTab] = useState<'dispatcher' | 'workflows' | 'webhooks' | 'history'>('dispatcher');
+  const [activeTab, setActiveTab] = useState<'dispatcher' | 'messaging' | 'workflows' | 'webhooks' | 'history'>('dispatcher');
+  const [messages, setMessages] = useState<MessageItemDTO[]>(() => messagingRepository.getAllMessages());
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(templates[0].id);
   const [selectedClientId, setSelectedClientId] = useState<string>(clients[0]?.id || '');
   const [activeChannel, setActiveChannel] = useState<'email' | 'whatsapp'>('email');
+  const [recipientEmail, setRecipientEmail] = useState(clients[0]?.email || '');
+  const [recipientPhone, setRecipientPhone] = useState(clients[0]?.phone || '');
 
   // Workflows & Webhooks
   const [workflows, setWorkflows] = useState<WorkflowRule[]>(() => automationRepository.getWorkflows());
@@ -81,7 +88,11 @@ export const AutomationsHubPage: React.FC = () => {
 
   // Despacho por Correo (Mailto)
   const handleDispatchEmail = () => {
-    const toEmail = selectedClient?.email || '';
+    const toEmail = recipientEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(toEmail)) {
+      setFeedback('Indica un correo válido para preparar el mensaje.');
+      return;
+    }
     const subjectEnc = encodeURIComponent(rendered.subject);
     const bodyEnc = encodeURIComponent(rendered.bodyEmail);
     const mailtoUrl = `mailto:${toEmail}?subject=${subjectEnc}&body=${bodyEnc}`;
@@ -106,7 +117,11 @@ export const AutomationsHubPage: React.FC = () => {
 
   // Despacho por WhatsApp
   const handleDispatchWhatsApp = () => {
-    const rawPhone = (selectedClient?.phone || '').replace(/[^0-9]/g, '');
+    const rawPhone = recipientPhone.replace(/[^0-9]/g, '');
+    if (rawPhone.length < 8) {
+      setFeedback('Indica un número válido con código de país para abrir WhatsApp.');
+      return;
+    }
     const textEnc = encodeURIComponent(rendered.bodyWhatsApp);
     const waUrl = rawPhone
       ? `https://wa.me/${rawPhone}?text=${textEnc}`
@@ -118,7 +133,7 @@ export const AutomationsHubPage: React.FC = () => {
       channel: 'whatsapp',
       clientId: selectedClient?.id,
       clientName: selectedClient?.name || 'Cliente',
-      recipientContact: selectedClient?.phone || 'Sin teléfono registrado',
+      recipientContact: recipientPhone.trim(),
       renderedContent: rendered.bodyWhatsApp,
     });
 
@@ -127,6 +142,41 @@ export const AutomationsHubPage: React.FC = () => {
     setTimeout(() => setFeedback(null), 4000);
 
     window.open(waUrl, '_blank');
+  };
+
+  useEffect(() => {
+    const handleMsgUpdate = () => {
+      setMessages(messagingRepository.getAllMessages());
+    };
+    window.addEventListener('lyberate-messages-update', handleMsgUpdate);
+    return () => {
+      window.removeEventListener('lyberate-messages-update', handleMsgUpdate);
+    };
+  }, []);
+
+  const handleSimulateDispatch = (id: string) => {
+    try {
+      messagingRepository.simulateDispatch(id);
+      setMessages(messagingRepository.getAllMessages());
+      setFeedback('Mensaje despachado y entregado al cliente (simulación local).');
+      setTimeout(() => setFeedback(null), 4000);
+    } catch {
+      setFeedback('Error al simular el despacho.');
+    }
+  };
+
+  const handleSimulateReply = (id: string) => {
+    try {
+      messagingRepository.simulateReply(
+        id,
+        '¡Hola! Confirmamos la recepción del mensaje y revisaremos los avances con el equipo.'
+      );
+      setMessages(messagingRepository.getAllMessages());
+      setFeedback('Respuesta entrante del cliente registrada en la bitácora.');
+      setTimeout(() => setFeedback(null), 4000);
+    } catch {
+      setFeedback('Error al simular la respuesta.');
+    }
   };
 
   // Acciones de Workflows
@@ -196,6 +246,7 @@ export const AutomationsHubPage: React.FC = () => {
       <Tabs
         tabs={[
           { id: 'dispatcher', label: 'Despachador Rápido' },
+          { id: 'messaging', label: `Cola Multicanal (${messages.length})` },
           { id: 'workflows', label: `Workflows Automáticos (${workflows.length})` },
           { id: 'webhooks', label: `Trazabilidad de Webhooks (${webhookLogs.length})` },
           { id: 'history', label: `Historial de Envíos (${dispatchLogs.length})` },
@@ -214,7 +265,7 @@ export const AutomationsHubPage: React.FC = () => {
                 1. Selección de Destinatario
               </span>
               <p className="text-[11px] text-[#5C5B56]">
-                Selecciona la cuenta para cargar datos automáticamente.
+                Selecciona una cuenta; puedes corregir el correo o el teléfono para este envío.
               </p>
             </div>
 
@@ -226,12 +277,29 @@ export const AutomationsHubPage: React.FC = () => {
                 const cli = clients.find((c) => c.id === e.target.value);
                 if (cli) {
                   setCustomAmountUsd(String(cli.totalContractValueUsd || 7500));
+                  setRecipientEmail(cli.email || '');
+                  setRecipientPhone(cli.phone || '');
                 }
               }}
               options={clients.map((c) => ({
                 value: c.id,
                 label: `${c.name} (${c.companyName || 'Empresa'})`,
               }))}
+            />
+
+            <Input
+              label="Correo de destino"
+              type="email"
+              value={recipientEmail}
+              onChange={(e) => setRecipientEmail(e.target.value)}
+              placeholder="persona@empresa.com"
+            />
+            <Input
+              label="Teléfono de WhatsApp (con código de país)"
+              type="tel"
+              value={recipientPhone}
+              onChange={(e) => setRecipientPhone(e.target.value)}
+              placeholder="+58 412 000 0000"
             />
 
             <div>
@@ -252,7 +320,7 @@ export const AutomationsHubPage: React.FC = () => {
                   className={`w-full text-left p-3 rounded-2xl border transition-all cursor-pointer ${
                     selectedTemplateId === tpl.id
                       ? 'bg-[#141413] text-white border-[#141413]'
-                      : 'bg-white text-[#141413] border-[#E5E3DC] hover:border-[#C85A32]'
+                      : 'bg-white text-[#141413] border-[#E5E3DC] hover:border-[#7C3AED]'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
@@ -350,7 +418,7 @@ export const AutomationsHubPage: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-center justify-between">
-                  <span>Destinatario: {selectedClient?.phone || 'Sin número registrado'}</span>
+                  <span>Destinatario: {recipientPhone || 'Sin número registrado'}</span>
                   <span className="text-[11px] font-mono text-emerald-700">Formato: WhatsApp Markdown</span>
                 </div>
                 <div className="p-5 bg-[#ECE5DD] border border-[#D5CEC7] rounded-2xl text-xs text-[#111B21] whitespace-pre-line leading-relaxed min-h-[220px] font-sans">
@@ -393,13 +461,155 @@ export const AutomationsHubPage: React.FC = () => {
         </div>
       )}
 
+      {/* TAB: COLA MULTICANAL & RESPUESTAS SIMULADAS */}
+      {activeTab === 'messaging' && (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-[#FAF5FF] to-white p-6 rounded-3xl border border-[#E9D5FF] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Radio className="w-4 h-4 text-[#7C3AED]" />
+                <span className="text-xs font-bold uppercase tracking-wider text-[#7C3AED]">
+                  Centro de Notificaciones & Mensajería
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-[#141413]">
+                Flujo Multicanal de Clientes (WhatsApp, Telegram, Correo)
+              </h3>
+              <p className="text-xs text-[#5C5B56] max-w-2xl">
+                Simula el ciclo completo de despacho, entrega y respuestas de clientes en un entorno local seguro. Ningún mensaje dispara transmisiones externas no autorizadas.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Badge variant="brand" size="sm">
+                {messages.length} mensajes en cola
+              </Badge>
+              <Badge variant="success" size="sm">
+                {messages.filter((m) => m.status === 'delivered_simulated' || m.status === 'reply_received_simulated').length} entregados
+              </Badge>
+            </div>
+          </div>
+
+          {/* Lista de Mensajes */}
+          <div className="space-y-4">
+            {messages.map((msg) => {
+              const isDelivered = msg.status === 'delivered_simulated' || msg.status === 'reply_received_simulated';
+              const hasReply = msg.status === 'reply_received_simulated';
+
+              return (
+                <div
+                  key={msg.id}
+                  className="bg-white rounded-3xl border border-[#E5E3DC] p-6 shadow-sm space-y-4 hover:border-[#7C3AED] transition-colors"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#F0EFEA]">
+                    <div className="flex items-center gap-2.5">
+                      <div
+                        className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${
+                          msg.channel === 'whatsapp'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : msg.channel === 'telegram'
+                            ? 'bg-sky-100 text-sky-800'
+                            : 'bg-purple-100 text-[#7C3AED]'
+                        }`}
+                      >
+                        {msg.channel === 'whatsapp' ? 'WA' : msg.channel === 'telegram' ? 'TG' : 'EM'}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-[#141413] text-sm">{msg.recipientName}</span>
+                          <span className="text-[11px] text-[#8A8881]">({msg.recipientContact})</span>
+                        </div>
+                        <span className="text-[11px] text-[#7C3AED] font-medium block">
+                          {msg.companyName} {msg.projectName ? `• ${msg.projectName}` : ''}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={hasReply ? 'brand' : isDelivered ? 'success' : 'neutral'}
+                        size="sm"
+                      >
+                        {hasReply
+                          ? 'Respuesta Recibida'
+                          : isDelivered
+                          ? 'Entregado (Simulado)'
+                          : 'Preparado'}
+                      </Badge>
+                      <span className="text-[11px] font-mono text-[#8A8881]">
+                        {new Date(msg.preparedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 text-xs">
+                    {msg.subject && (
+                      <div className="font-bold text-[#141413]">Asunto: {msg.subject}</div>
+                    )}
+                    <p className="text-[#5C5B56] leading-relaxed whitespace-pre-line bg-[#FBFBF9] p-3.5 rounded-xl border border-[#F0EFEA]">
+                      {msg.content}
+                    </p>
+                  </div>
+
+                  {msg.simulatedReplyText && (
+                    <div className="p-3.5 rounded-xl bg-purple-50 border border-purple-200 text-xs space-y-1">
+                      <div className="flex items-center gap-1.5 font-bold text-[#7C3AED]">
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>Respuesta Simulada del Cliente:</span>
+                      </div>
+                      <p className="text-[#141413]">{msg.simulatedReplyText}</p>
+                      {msg.simulatedReplyAt && (
+                        <span className="text-[10px] font-mono text-[#8A8881] block">
+                          {new Date(msg.simulatedReplyAt).toLocaleTimeString()}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="pt-2 flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <span className="text-[#8A8881] text-[11px]">
+                      Preparado por: <strong>{msg.preparedBy}</strong>
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                      {!isDelivered && (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleSimulateDispatch(msg.id)}
+                          className="bg-[#7C3AED] hover:bg-[#6D28D9] text-xs py-1 px-3"
+                        >
+                          <Send className="w-3 h-3 mr-1.5" />
+                          Simular Despacho
+                        </Button>
+                      )}
+
+                      {isDelivered && !hasReply && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSimulateReply(msg.id)}
+                          className="text-xs py-1 px-3 border-[#7C3AED] text-[#7C3AED] hover:bg-purple-50"
+                        >
+                          <MessageCircle className="w-3 h-3 mr-1.5" />
+                          Simular Respuesta de Cliente
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* TAB 2: WORKFLOWS AUTOMÁTICOS */}
       {activeTab === 'workflows' && (
         <div className="space-y-6">
           <div className="bg-[#FAF9F5] border border-[#E5E3DC] rounded-3xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-[#141413] text-white flex items-center justify-center">
-                <Zap className="w-5 h-5 text-[#C85A32]" />
+                <Zap className="w-5 h-5 text-[#7C3AED]" />
               </div>
               <div>
                 <h3 className="text-sm font-bold text-[#141413]">Motor de Flujos Reactivos</h3>
@@ -455,7 +665,7 @@ export const AutomationsHubPage: React.FC = () => {
             {workflows.map((wf) => (
               <div
                 key={wf.id}
-                className="bg-white rounded-3xl border border-[#E5E3DC] p-6 shadow-sm flex flex-col justify-between space-y-4 hover:border-[#C85A32] transition-colors"
+                className="bg-white rounded-3xl border border-[#E5E3DC] p-6 shadow-sm flex flex-col justify-between space-y-4 hover:border-[#7C3AED] transition-colors"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
@@ -470,7 +680,7 @@ export const AutomationsHubPage: React.FC = () => {
                       onClick={() => handleToggleWorkflow(wf.id)}
                       className={`p-1.5 rounded-xl border transition-colors cursor-pointer shrink-0 ${
                         wf.status === 'active'
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                           ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                           : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200'
                       }`}
                       title={wf.status === 'active' ? 'Pausar flujo' : 'Activar flujo'}
@@ -506,7 +716,7 @@ export const AutomationsHubPage: React.FC = () => {
                     <ul className="text-xs text-[#2A2926] space-y-1">
                       {wf.actions.map((act, idx) => (
                         <li key={idx} className="flex items-center gap-1.5 text-[11px]">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#C85A32]" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#7C3AED]" />
                           <span>{act.description}</span>
                         </li>
                       ))}
@@ -525,7 +735,7 @@ export const AutomationsHubPage: React.FC = () => {
                     size="sm"
                     onClick={() => handleRunWorkflow(wf)}
                   >
-                    <Play className="w-3.5 h-3.5 mr-1 text-[#C85A32]" />
+                    <Play className="w-3.5 h-3.5 mr-1 text-[#7C3AED]" />
                     Probar Flujo
                   </Button>
                 </div>
@@ -610,7 +820,7 @@ export const AutomationsHubPage: React.FC = () => {
 
                 <div className="font-mono text-[11px] bg-white p-2.5 rounded-xl border border-[#E5E3DC] text-[#5C5B56] space-y-1">
                   <div><strong>Destino:</strong> {log.targetUrl}</div>
-                  <div><strong>Firma HMAC:</strong> <span className="text-[#C85A32]">{log.signatureHeader}</span></div>
+                  <div><strong>Firma HMAC:</strong> <span className="text-[#7C3AED]">{log.signatureHeader}</span></div>
                   <div><strong>Payload Sanitizado:</strong> {JSON.stringify(log.payloadSanitized)}</div>
                 </div>
               </div>
@@ -644,7 +854,7 @@ export const AutomationsHubPage: React.FC = () => {
                   className="p-4 rounded-2xl bg-[#FBFBF9] border border-[#E5E3DC] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-white border border-[#E5E3DC] flex items-center justify-center text-[#C85A32] shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-white border border-[#E5E3DC] flex items-center justify-center text-[#7C3AED] shrink-0">
                       {log.channel === 'email' ? <Mail className="w-4 h-4" /> : <Smartphone className="w-4 h-4 text-emerald-600" />}
                     </div>
                     <div>

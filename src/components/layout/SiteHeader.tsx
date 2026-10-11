@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { Menu, X, Lock } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { LyberateLogo } from '../common/LyberateLogo';
 
 export const SiteHeader: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -16,18 +17,16 @@ export const SiteHeader: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-[#FBFBF9]/90 backdrop-blur-md border-b border-[#E5E3DC]">
+    <header className="site-header sticky top-0 z-40 border-b border-white/60 bg-[#FBFBF9]/80 backdrop-blur-2xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-18">
           {/* Brand Logo */}
           <Link
             to="/"
-            className="flex items-center gap-2.5 text-[#141413] hover:opacity-90 transition-opacity focus-visible:outline-2 rounded-lg"
+            className="site-brand flex items-center hover:opacity-95 transition-opacity focus-visible:outline-2 rounded-xl"
+            aria-label="Ir a inicio de Lyberate"
           >
-            <div className="w-8 h-8 rounded-lg bg-[#141413] flex items-center justify-center text-white font-bold text-sm shadow-xs">
-              <span className="text-[#C85A32]">L</span>
-            </div>
-            <span className="font-bold text-lg tracking-tight font-editorial-heading">Lyberate</span>
+            <LyberateLogo size="md" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -37,10 +36,10 @@ export const SiteHeader: React.FC = () => {
                 key={link.path}
                 to={link.path}
                 className={({ isActive }) =>
-                  `px-3 py-2 text-xs font-semibold rounded-md transition-colors ${
+                  `site-link px-3.5 py-2 text-xs font-semibold rounded-full border border-transparent ${
                     isActive
-                      ? 'text-[#C85A32] bg-[#F5F4EF]'
-                      : 'text-[#5C5B56] hover:text-[#141413] hover:bg-[#F5F4EF]'
+                      ? 'text-[#141413] bg-white border-[#E5E3DC] shadow-sm'
+                      : 'text-[#5C5B56] hover:text-[#141413] hover:bg-white/70 hover:border-[#E5E3DC]'
                   }`
                 }
               >
@@ -55,7 +54,7 @@ export const SiteHeader: React.FC = () => {
             <Link
               to="/admin"
               aria-label="Acceso privado al panel de control"
-              className="text-[#8A8881] hover:text-[#141413] p-2 rounded-lg transition-colors text-xs font-medium flex items-center gap-1"
+              className="site-admin-link site-link text-[#8A8881] hover:text-[#141413] p-2 rounded-lg text-xs font-medium flex items-center gap-1"
               title="Control Room"
             >
               <Lock className="w-3.5 h-3.5" />
@@ -63,7 +62,7 @@ export const SiteHeader: React.FC = () => {
             </Link>
 
             <Link to="/contacto">
-              <Button size="sm" variant="primary">
+              <Button size="sm" variant="primary" className="btn-press">
                 Iniciar conversación
               </Button>
             </Link>
@@ -94,10 +93,10 @@ export const SiteHeader: React.FC = () => {
                 to={link.path}
                 onClick={() => setMobileMenuOpen(false)}
                 className={({ isActive }) =>
-                  `px-3 py-2.5 text-sm font-semibold rounded-lg transition-colors ${
+                  `site-link px-4 py-3 text-sm font-semibold rounded-2xl border border-transparent ${
                     isActive
-                      ? 'text-[#C85A32] bg-[#F5F4EF]'
-                      : 'text-[#5C5B56] hover:text-[#141413] hover:bg-[#F5F4EF]'
+                      ? 'text-[#141413] bg-white border-[#E5E3DC] shadow-sm'
+                      : 'text-[#5C5B56] hover:text-[#141413] hover:bg-white/70 hover:border-[#E5E3DC]'
                   }`
                 }
               >
@@ -126,4 +125,3 @@ export const SiteHeader: React.FC = () => {
     </header>
   );
 };
-

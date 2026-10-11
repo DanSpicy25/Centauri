@@ -150,7 +150,7 @@ export const LaunchOperationsHubPage: React.FC = () => {
           className="bg-[#141413] text-white text-xs px-4 py-3 rounded-xl shadow-lg border border-[#3E3D38] flex items-center justify-between animate-fadeIn"
         >
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-[#C85A32]" />
+            <CheckCircle2 className="w-4 h-4 text-[#7C3AED]" />
             <span className="font-medium">{notification}</span>
           </div>
           <button
@@ -184,7 +184,7 @@ export const LaunchOperationsHubPage: React.FC = () => {
             onClick={handleRunAudit}
             disabled={isAuditing}
           >
-            <Zap className={`w-3.5 h-3.5 mr-1.5 text-[#C85A32] ${isAuditing ? 'animate-spin' : ''}`} />
+            <Zap className={`w-3.5 h-3.5 mr-1.5 text-[#7C3AED] ${isAuditing ? 'animate-spin' : ''}`} />
             {isAuditing ? 'Analizando...' : 'Auditoría en Vivo'}
           </Button>
 
@@ -239,7 +239,7 @@ export const LaunchOperationsHubPage: React.FC = () => {
         <div className="bg-white/90 backdrop-blur-md rounded-2xl p-4 border border-[#E5E3DC] shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-[#5C5B56]">Cabeceras de Blindaje</span>
-            <div className="w-7 h-7 rounded-lg bg-[#FBF1EC] flex items-center justify-center text-[#C85A32]">
+            <div className="w-7 h-7 rounded-lg bg-[#F5F3FF] flex items-center justify-center text-[#7C3AED]">
               <ShieldCheck className="w-4 h-4" />
             </div>
           </div>
@@ -374,7 +374,7 @@ export const LaunchOperationsHubPage: React.FC = () => {
 
           <div className="bg-[#141413] text-[#F5F4EF] p-5 rounded-2xl border border-[#2A2926]">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#C85A32]" />
+              <Sparkles className="w-4 h-4 text-[#7C3AED]" />
               Ventaja de Arquitectura Frente a WordPress o Plantillas Genéricas
             </h3>
             <p className="text-xs text-[#8A8881] mt-2 leading-relaxed">
@@ -529,7 +529,7 @@ export const LaunchOperationsHubPage: React.FC = () => {
               {activeSocialPlatform === 'google' && (
                 <div className="bg-white p-5 rounded-2xl border border-[#E5E3DC] shadow-xs">
                   <div className="flex items-center gap-2 text-xs text-[#202124]">
-                    <div className="w-4 h-4 rounded-full bg-[#C85A32] flex items-center justify-center text-white text-[9px] font-bold">L</div>
+                    <div className="w-4 h-4 rounded-full bg-[#7C3AED] flex items-center justify-center text-white text-[9px] font-bold">L</div>
                     <span className="font-medium">Lyberate</span>
                     <span className="text-[#5F6368]">› sobre-nosotros</span>
                   </div>
@@ -554,7 +554,7 @@ export const LaunchOperationsHubPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#141413] text-white flex items-center justify-center">
-                  <HardDrive className="w-5 h-5 text-[#C85A32]" />
+                  <HardDrive className="w-5 h-5 text-[#7C3AED]" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-[#141413]">
@@ -661,7 +661,7 @@ export const LaunchOperationsHubPage: React.FC = () => {
             <div className="bg-white rounded-2xl p-5 border border-[#E5E3DC] shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-[#141413] flex items-center gap-2">
-                  <Upload className="w-4 h-4 text-[#C85A32]" />
+                  <Upload className="w-4 h-4 text-[#7C3AED]" />
                   Restaurar Snapshot del Sistema
                 </h3>
                 <div>
@@ -677,7 +677,7 @@ export const LaunchOperationsHubPage: React.FC = () => {
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <FileCheck className="w-3.5 h-3.5 mr-1 text-[#C85A32]" />
+                    <FileCheck className="w-3.5 h-3.5 mr-1 text-[#7C3AED]" />
                     Cargar Archivo .json
                   </Button>
                 </div>
@@ -705,7 +705,7 @@ export const LaunchOperationsHubPage: React.FC = () => {
             {/* Protocolo de Rollback Cloudflare Pages */}
             <div className="bg-[#141413] text-[#F5F4EF] rounded-2xl p-5 border border-[#2A2926] space-y-3">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <RotateCcwIcon className="w-4 h-4 text-[#C85A32]" />
+                <RotateCcwIcon className="w-4 h-4 text-[#7C3AED]" />
                 Protocolo de Rollback Instantáneo en Cloudflare Pages
               </h3>
               <p className="text-xs text-[#8A8881] leading-relaxed">
@@ -714,7 +714,7 @@ export const LaunchOperationsHubPage: React.FC = () => {
               <div className="bg-[#1C1B18] p-3 rounded-xl border border-[#3E3D38] font-mono text-[11px] text-[#C5C3BC] space-y-1.5">
                 <div>1. Ingresar al panel de Cloudflare Pages &gt; Centauri/Lyberate.</div>
                 <div>2. Seleccionar el historial inmutable de despliegues (Deployments).</div>
-                <div>3. Seleccionar el commit/build anterior verificado y pulsar <span className="text-[#C85A32]">"Rollback to this deployment"</span>.</div>
+                <div>3. Seleccionar el commit/build anterior verificado y pulsar <span className="text-[#A78BFA]">"Rollback to this deployment"</span>.</div>
                 <div>Tiempo estimado de reversión global en el CDN: <span className="text-emerald-400 font-bold">&lt; 15 segundos</span>.</div>
               </div>
 

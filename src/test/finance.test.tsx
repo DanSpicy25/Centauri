@@ -86,12 +86,12 @@ describe('Finanzas, Planes SaaS, Perfiles & Automatizaciones (Fase 07)', () => {
 
       const valdez = profileRepository.getProfileById('valdez');
       expect(valdez?.name).toBe('Valdez');
-      expect(valdez?.roleTitle).toContain('Arquitecto de Software');
+      expect(valdez?.roleTitle).toContain('desarrollo digital');
       expect(valdez?.specialties).toContain('React 19 & TypeScript');
 
       const socio = profileRepository.getProfileById('socio');
       expect(socio?.name).toBe('Socio Fundador');
-      expect(socio?.roleTitle).toContain('UI/UX');
+      expect(socio?.roleTitle).toContain('diseño de producto');
     });
 
     it('debe actualizar los datos de un perfil y persistir cambios', () => {
@@ -157,4 +157,3 @@ describe('Finanzas, Planes SaaS, Perfiles & Automatizaciones (Fase 07)', () => {
     });
   });
 });
-

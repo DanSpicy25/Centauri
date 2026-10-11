@@ -13,8 +13,8 @@ const DEFAULT_PAGE_CONFIGS: Record<CmsPageId, PageContentConfig> = {
     lastModifiedBy: 'Equipo de Arquitectura',
     currentVersionId: 'v1.0.0',
     seo: {
-      metaTitle: 'Lyberate — Software con criterio, arquitectura sólida y presencia memorable',
-      metaDescription: 'Estudio de ingeniería y producto digital. Desarrollamos plataformas, sistemas de gestión y aplicaciones web con diseño editorial y código sólido.',
+      metaTitle: 'Lyberate — Soluciones digitales para tu negocio',
+      metaDescription: 'Lyberate crea sitios y herramientas digitales a medida para ayudar a los negocios a organizarse, atender mejor y crecer.',
       canonicalUrl: 'https://lyberate.com/',
       robotsIndex: true,
     },
@@ -27,23 +27,23 @@ const DEFAULT_PAGE_CONFIGS: Record<CmsPageId, PageContentConfig> = {
       { id: 'cta', name: 'Llamada a la Acción Final', isVisible: true, order: 6 },
     ],
     hero: {
-      eyebrow: 'Estudio de Ingeniería & Arquitectura de Software',
-      headline: 'Software con criterio, arquitectura sólida y presencia memorable.',
-      description: 'Construimos plataformas digitales, sistemas de gestión y productos web para organizaciones que valoran la claridad visual, el alto rendimiento y la independencia tecnológica.',
+      eyebrow: 'Soluciones digitales hechas para personas y negocios',
+      headline: 'Tu negocio merece herramientas que trabajen contigo.',
+      description: 'Organiza mejor el trabajo, atiende a tus clientes con más calma y guarda tiempo para crecer.',
       primaryCtaText: 'Conversar sobre tu proyecto',
       primaryCtaLink: '/contacto',
       secondaryCtaText: 'Explorar trabajos y casos',
       secondaryCtaLink: '/trabajos',
-      badges: ['React 19 + TypeScript', 'Accesibilidad WCAG universal', 'Arquitectura desacoplada'],
+      badges: ['Acompañamiento directo', 'Diseño pensado para personas', 'Soluciones a medida'],
     },
     processSteps: [
-      { step: '01', title: 'Auditoría & Alcance', description: 'Examinamos los requisitos reales, limitaciones y modelos de datos antes de escribir código.' },
-      { step: '02', title: 'Arquitectura & Sistema', description: 'Diseñamos tokens, contratos tipados y bases de componentes accesibles.' },
-      { step: '03', title: 'Construcción Modular', description: 'Desarrollamos por fases incrementales con pruebas verificables en cada entrega.' },
-      { step: '04', title: 'Auditoría & Despliegue', description: 'Revisiones de seguridad, rendimiento y accesibilidad antes de la puesta en marcha.' },
+    { step: '01', title: 'Te escuchamos', description: 'Entendemos tus objetivos, tus dificultades y cómo trabaja tu equipo.' },
+    { step: '02', title: 'Trazamos el camino', description: 'Acordamos prioridades, alcance y próximos pasos antes de comenzar.' },
+    { step: '03', title: 'Lo construimos contigo', description: 'Compartimos avances para que puedas revisar y opinar durante el proceso.' },
+    { step: '04', title: 'Te acompañamos', description: 'Te ayudamos a poner en marcha la solución y resolver tus dudas.' },
     ],
     ctaHeadline: '¿Tienes un proyecto en mente?',
-    ctaDescription: 'Hablemos con honestidad sobre alcance, viabilidad técnica y soluciones prácticas.',
+    ctaDescription: 'Hablemos con honestidad sobre lo que necesitas, las opciones disponibles y los próximos pasos.',
     ctaButtonText: 'Iniciar conversación',
   },
   about: {
@@ -54,7 +54,7 @@ const DEFAULT_PAGE_CONFIGS: Record<CmsPageId, PageContentConfig> = {
     currentVersionId: 'v1.0.0',
     seo: {
       metaTitle: 'Sobre Lyberate — Filosofía, Equipo y Principios',
-      metaDescription: 'Conoce los principios no negociables de Lyberate: cero plantillas genéricas, código auditado y honestidad de atribución.',
+      metaDescription: 'Conoce al equipo de Lyberate y nuestra forma de acompañar a cada negocio.',
       canonicalUrl: 'https://lyberate.com/sobre-nosotros',
       robotsIndex: true,
     },
@@ -66,11 +66,11 @@ const DEFAULT_PAGE_CONFIGS: Record<CmsPageId, PageContentConfig> = {
     ],
     aboutStory: {
       eyebrow: 'Sobre Lyberate',
-      title: 'Ingeniería de software con rigor técnico y diseño intencional',
-      leadParagraph: 'Lyberate nace con una convicción clara: las mejores herramientas digitales combinan una arquitectura de código indestructible con una experiencia de usuario cuidada hasta el último detalle.',
+      title: 'Soluciones digitales que entienden tu negocio',
+      leadParagraph: 'Somos un equipo que escucha primero y crea herramientas digitales pensando en las personas que las usan cada día.',
       bodyParagraphs: [
-        'Rechazamos las plantillas genéricas, las soluciones sobrecargadas de dependencias frágiles y las falsas promesas tecnológicas. Cada sistema que diseñamos y construimos responde a necesidades operativas reales, respetando la propiedad intelectual, la accesibilidad universal y la privacidad.',
-        'Trabajamos tanto en el desarrollo de productos propios de alta especialización como en proyectos a medida para clientes y organizaciones colaboradoras, siempre con transparencia sobre nuestro rol y aportes concretos.',
+        'Cada negocio tiene una manera particular de trabajar. Por eso entendemos el problema contigo y proponemos una solución clara, con prioridades y próximos pasos acordados.',
+        'Creamos sitios, herramientas de gestión y productos propios. Durante el proyecto tendrás comunicación directa con las personas que lo llevan adelante.',
       ],
     },
   },
@@ -81,8 +81,8 @@ const DEFAULT_PAGE_CONFIGS: Record<CmsPageId, PageContentConfig> = {
     lastModifiedBy: 'Equipo de Arquitectura',
     currentVersionId: 'v1.0.0',
     seo: {
-      metaTitle: 'Servicios de Software & Arquitectura — Lyberate',
-      metaDescription: 'Desarrollo web editorial, plataformas de gestión comercial e integraciones de APIs con contratos tipados.',
+      metaTitle: 'Servicios para tu negocio — Lyberate',
+      metaDescription: 'Sitios web, herramientas de gestión e integraciones pensadas para las necesidades de tu negocio.',
       canonicalUrl: 'https://lyberate.com/servicios',
       robotsIndex: true,
     },
@@ -98,7 +98,7 @@ const DEFAULT_PAGE_CONFIGS: Record<CmsPageId, PageContentConfig> = {
     currentVersionId: 'v1.0.0',
     seo: {
       metaTitle: 'Productos Propios & Gestionados — Lyberate',
-      metaDescription: 'Plataformas como Sagitta y Lyberate CMS diseñadas para alto rendimiento y personalización por vertical.',
+      metaDescription: 'Conoce los productos y las herramientas digitales desarrolladas por Lyberate.',
       canonicalUrl: 'https://lyberate.com/productos',
       robotsIndex: true,
     },
@@ -114,7 +114,7 @@ const DEFAULT_PAGE_CONFIGS: Record<CmsPageId, PageContentConfig> = {
     currentVersionId: 'v1.0.0',
     seo: {
       metaTitle: 'Portafolio & Trabajos Verificados — Lyberate',
-      metaDescription: 'Casos de estudio reales con tecnologías comprobadas en código fuente y resultados verificables.',
+      metaDescription: 'Conoce proyectos reales, las necesidades que resolvieron y el trabajo realizado por Lyberate.',
       canonicalUrl: 'https://lyberate.com/trabajos',
       robotsIndex: true,
     },
@@ -130,7 +130,7 @@ const DEFAULT_PAGE_CONFIGS: Record<CmsPageId, PageContentConfig> = {
     currentVersionId: 'v1.0.0',
     seo: {
       metaTitle: 'Contacto — Inicia una Conversación con Lyberate',
-      metaDescription: 'Habla directamente con nuestros arquitectos de software sobre alcance, viabilidad y presupuesto.',
+      metaDescription: 'Cuéntanos qué necesita tu negocio y conversemos sobre el siguiente paso.',
       canonicalUrl: 'https://lyberate.com/contacto',
       robotsIndex: true,
     },
@@ -161,6 +161,7 @@ export class CmsRepository {
         Object.keys(parsed).forEach((key) => {
           this.pages.set(key as CmsPageId, parsed[key]);
         });
+        this.migrateLegacyPublicCopy();
       } catch {
         this.resetPagesToDefault();
       }
@@ -200,6 +201,30 @@ export class CmsRepository {
       this.pages.set(key as CmsPageId, JSON.parse(JSON.stringify(DEFAULT_PAGE_CONFIGS[key as CmsPageId])));
     });
     this.saveToStorage('lyberate_cms_pages', JSON.stringify(Object.fromEntries(this.pages)));
+  }
+
+  private migrateLegacyPublicCopy() {
+    let changed = false;
+    const home = this.pages.get('home');
+    if (home?.hero?.headline === 'Tu negocio, con herramientas digitales que sí te hacen la vida más fácil.') {
+      home.hero.headline = DEFAULT_PAGE_CONFIGS.home.hero?.headline ?? home.hero.headline;
+      home.hero.description = DEFAULT_PAGE_CONFIGS.home.hero?.description ?? home.hero.description;
+      changed = true;
+    }
+    if (home?.ctaDescription === 'Hablemos con honestidad sobre alcance, viabilidad técnica y soluciones prácticas.') {
+      home.ctaDescription = DEFAULT_PAGE_CONFIGS.home.ctaDescription;
+      changed = true;
+    }
+
+    const about = this.pages.get('about');
+    if (about?.aboutStory?.title === 'Ingeniería de software con rigor técnico y diseño intencional') {
+      about.aboutStory.title = DEFAULT_PAGE_CONFIGS.about.aboutStory?.title ?? about.aboutStory.title;
+      changed = true;
+    }
+
+    if (changed) {
+      this.saveToStorage('lyberate_cms_pages', JSON.stringify(Object.fromEntries(this.pages)));
+    }
   }
 
   private initDefaultVersions() {

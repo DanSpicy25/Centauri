@@ -15,6 +15,7 @@ import { NotFoundPage } from './pages/NotFoundPage';
 
 // Admin Pages (Control Room)
 import { ControlRoomOverview } from './pages/admin/ControlRoomOverview';
+import { ProjectsHubPage } from './pages/admin/ProjectsHubPage';
 import { DesignSystemShowcase } from './pages/admin/DesignSystemShowcase';
 import { CmsDashboard } from './pages/admin/CmsDashboard';
 import { CmsPageEditor } from './pages/admin/CmsPageEditor';
@@ -46,6 +47,7 @@ export const App: React.FC = () => {
         {/* Árbol Privado Administrativo (Lyberate Control Room) */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<ControlRoomOverview />} />
+          <Route path="proyectos" element={<ProjectsHubPage />} />
           <Route path="design-system" element={<DesignSystemShowcase />} />
           <Route path="cms" element={<CmsDashboard />} />
           <Route path="cms/editor/:pageId" element={<CmsPageEditor />} />

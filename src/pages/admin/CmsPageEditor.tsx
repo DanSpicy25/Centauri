@@ -551,7 +551,7 @@ export const CmsPageEditor: React.FC = () => {
                 {content.processSteps.map((step, sIdx) => (
                   <div key={step.step} className="p-4 bg-[#FBFBF9] rounded-xl border border-[#E5E3DC] space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-sm font-bold text-[#C85A32]">
+                      <span className="font-mono text-sm font-bold text-[#7C3AED]">
                         Paso {step.step}
                       </span>
                     </div>
@@ -616,7 +616,7 @@ export const CmsPageEditor: React.FC = () => {
           <div className="bg-white rounded-xl border border-[#E5E3DC] p-6 space-y-6">
             <div>
               <h2 className="text-base font-bold text-[#141413] flex items-center gap-2">
-                <Globe className="w-4 h-4 text-[#C85A32]" />
+                <Globe className="w-4 h-4 text-[#7C3AED]" />
                 <span>Configuración de SEO & Motores de Búsqueda</span>
               </h2>
               <p className="text-xs text-[#5C5B56] mt-0.5">
@@ -704,7 +704,7 @@ export const CmsPageEditor: React.FC = () => {
 
             <div className="p-4 bg-[#FBFBF9] rounded-xl border border-[#E5E3DC] max-w-2xl space-y-1.5 font-sans">
               <div className="flex items-center gap-2 text-xs text-[#202124]">
-                <div className="w-4 h-4 rounded-full bg-[#C85A32] flex items-center justify-center text-[9px] text-white font-bold">
+                <div className="w-4 h-4 rounded-full bg-[#7C3AED] flex items-center justify-center text-[9px] text-white font-bold">
                   L
                 </div>
                 <div className="flex flex-col">
@@ -798,7 +798,7 @@ export const CmsPageEditor: React.FC = () => {
               <div className="p-6 sm:p-10 space-y-8">
                 {content.hero && (
                   <div className="space-y-4 text-center max-w-2xl mx-auto py-6">
-                    <span className="text-[11px] font-bold text-[#C85A32] tracking-wider uppercase">
+                    <span className="text-[11px] font-bold text-[#7C3AED] tracking-wider uppercase">
                       {content.hero.eyebrow}
                     </span>
                     <h2 className="text-2xl sm:text-4xl font-extrabold text-[#141413] font-editorial-heading leading-tight">
@@ -828,7 +828,7 @@ export const CmsPageEditor: React.FC = () => {
 
                 {content.aboutStory && (
                   <div className="space-y-4 max-w-xl mx-auto py-4">
-                    <span className="text-[11px] font-bold text-[#C85A32] uppercase">
+                    <span className="text-[11px] font-bold text-[#7C3AED] uppercase">
                       {content.aboutStory.eyebrow}
                     </span>
                     <h3 className="text-xl font-bold text-[#141413] font-editorial-heading">
@@ -920,7 +920,7 @@ export const CmsPageEditor: React.FC = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => setRollbackTarget(ver)}
-                        className="gap-1.5 text-xs border-[#C85A32] text-[#C85A32] hover:bg-[#C85A32] hover:text-white shrink-0"
+                        className="gap-1.5 text-xs border-[#7C3AED] text-[#7C3AED] hover:bg-[#7C3AED] hover:text-white shrink-0"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
                         <span>Revertir a esta versión</span>
@@ -988,7 +988,7 @@ export const CmsPageEditor: React.FC = () => {
               variant="primary"
               size="sm"
               onClick={() => rollbackTarget && handleRollback(rollbackTarget)}
-              className="bg-[#C85A32] hover:bg-[#A3421E] text-white gap-1.5"
+              className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white gap-1.5"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Revertir Ahora</span>

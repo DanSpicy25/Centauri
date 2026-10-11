@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { LyberateLogo } from '../common/LyberateLogo';
 
 export const Footer: React.FC = () => {
   return (
@@ -8,16 +9,9 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand Column */}
           <div className="md:col-span-2 space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-[#C85A32] flex items-center justify-center text-white font-bold text-xs">
-                L
-              </div>
-              <span className="font-bold text-xl tracking-tight text-white font-editorial-heading">
-                Lyberate
-              </span>
-            </div>
+            <LyberateLogo size="lg" inverted />
             <p className="text-xs text-[#8A8881] max-w-sm leading-relaxed">
-              Plataforma digital de desarrollo de software, productos tecnológicos y arquitectura de sistemas. Creamos soluciones con criterio propio, diseño editorial y código sólido.
+              Creamos herramientas digitales claras y útiles para que tu negocio trabaje mejor y atienda a sus clientes.
             </p>
             <div className="pt-2 text-[11px] text-[#8A8881]">
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-2" aria-hidden="true" />
@@ -68,11 +62,10 @@ export const Footer: React.FC = () => {
         <div className="mt-12 pt-8 border-t border-[#2A2926] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#8A8881]">
           <p>© {new Date().getFullYear()} Lyberate. Todos los derechos reservados.</p>
           <p className="text-[11px]">
-            Construido con React 19, TypeScript y Tailwind CSS sobre arquitectura Centauri.
+            Ideas claras, soluciones cuidadas y acompañamiento cercano.
           </p>
         </div>
       </div>
     </footer>
   );
 };
-

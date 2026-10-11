@@ -20,7 +20,7 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const variantStyles = {
-    brand: 'bg-[#FBF1EC] text-[#B24E2A] border border-[#F3D7CA]',
+    brand: 'bg-[#F5F3FF] text-[#7C3AED] border border-[#DDD6FE]',
     neutral: 'bg-[#F0EFEA] text-[#5C5B56] border border-[#E5E3DC]',
     success: 'bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0]',
     warning: 'bg-[#FFFBEB] text-[#92400E] border border-[#FDE68A]',

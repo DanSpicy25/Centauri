@@ -19,8 +19,8 @@ const DEFAULT_PROFILES: FounderProfileDTO[] = [
   {
     id: 'valdez',
     name: 'Valdez',
-    roleTitle: 'Arquitecto de Software & Full Stack Lead',
-    bio: 'Especialista en arquitectura frontend desacoplada, backend escalable en NestJS/PostgreSQL, despliegues Edge en Cloudflare y diseño de sistemas críticos.',
+    roleTitle: 'Dirección y desarrollo digital',
+    bio: 'Acompaña a cada cliente desde la definición de sus necesidades hasta la puesta en marcha de herramientas digitales a su medida.',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
     email: 'valdez@lyberate.com',
     phone: '+58 412 889 0012',
@@ -43,8 +43,8 @@ const DEFAULT_PROFILES: FounderProfileDTO[] = [
   {
     id: 'socio',
     name: 'Socio Fundador',
-    roleTitle: 'Director de Operaciones & Diseño de Producto (UI/UX)',
-    bio: 'Líder en diseño editorial, accesibilidad universal (WCAG), estrategia comercial, experiencia de cliente y automatización de procesos de venta.',
+    roleTitle: 'Operaciones y diseño de producto',
+    bio: 'Ayuda a convertir las necesidades del negocio en experiencias claras, útiles y fáciles de adoptar por los equipos.',
     avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
     email: 'socio@lyberate.com',
     phone: '+58 414 772 3344',
@@ -85,6 +85,7 @@ export class ProfileRepository {
           if (Array.isArray(parsed) && parsed.length > 0) {
             this.profiles = parsed;
           }
+
         } catch {
           this.profiles = [...DEFAULT_PROFILES];
         }
@@ -94,6 +95,11 @@ export class ProfileRepository {
         this.activeProfileId = storedActive;
       }
     }
+  }
+
+  reloadFromStorage(): void {
+    this.profiles = [...DEFAULT_PROFILES];
+    this.loadState();
   }
 
   private saveState() {
@@ -137,6 +143,18 @@ export class ProfileRepository {
     return updated;
   }
 
+  updateOwnProfile(
+    actorProfileId: string,
+    updates: Partial<FounderProfileDTO>
+  ): FounderProfileDTO {
+    const profileId = updates.id ?? actorProfileId;
+    if (profileId !== actorProfileId) {
+      throw new Error('Solo puedes modificar tu propio perfil.');
+    }
+    const { id, ...changes } = updates;
+    return this.updateProfile(actorProfileId, changes);
+  }
+
   resetToDefault(): void {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.removeItem('lyberate_founder_profiles');
@@ -148,4 +166,3 @@ export class ProfileRepository {
 }
 
 export const profileRepository = new ProfileRepository();
-

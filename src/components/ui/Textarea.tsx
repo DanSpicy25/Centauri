@@ -30,7 +30,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           aria-describedby={error ? errorId : helperText ? helperId : undefined}
           className={`w-full px-3.5 py-2 text-sm bg-white text-[#141413] border rounded-lg transition-colors
             placeholder:text-[#8A8881] disabled:bg-[#F5F4EF] disabled:cursor-not-allowed
-            focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#C85A32]
+            focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#7C3AED]
             ${error ? 'border-[#DC2626] focus-visible:outline-[#DC2626]' : 'border-[#D1CEBF] hover:border-[#B5B2A1]'}
             ${className}`}
           {...props}

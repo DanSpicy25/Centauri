@@ -4,8 +4,6 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
-  CheckCircle2,
-  ShieldCheck,
   Tag,
   Copy,
   Check,
@@ -128,7 +126,7 @@ export const ProjectDetailPage: React.FC = () => {
           {project.name}
         </h1>
 
-        <p className="text-base sm:text-lg text-[#C85A32] font-medium leading-relaxed">
+        <p className="text-base sm:text-lg text-[#7C3AED] font-medium leading-relaxed">
           {project.tagline}
         </p>
 
@@ -142,7 +140,7 @@ export const ProjectDetailPage: React.FC = () => {
               href={project.publicUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#141413] hover:text-[#C85A32] underline"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#141413] hover:text-[#7C3AED] underline"
             >
               <span>Visitar portal oficial en producción</span>
               <ArrowUpRight className="w-4 h-4" />
@@ -172,7 +170,7 @@ export const ProjectDetailPage: React.FC = () => {
         )}
 
         <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md text-[#141413] text-xs font-semibold px-3 py-1.5 rounded-full border border-black/5 flex items-center gap-1.5 shadow-sm opacity-90 group-hover:opacity-100 transition-opacity">
-          <Maximize2 className="w-3.5 h-3.5 text-[#C85A32]" />
+          <Maximize2 className="w-3.5 h-3.5 text-[#7C3AED]" />
           <span>Ver pantalla completa</span>
         </div>
 
@@ -187,70 +185,9 @@ export const ProjectDetailPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         {/* Main Content (col-span-8) */}
         <div className="md:col-span-8 space-y-8">
-          {/* Separación obligatoria: Alcance total vs. Contribución de Lyberate */}
-          <section className="bg-white p-6 sm:p-8 rounded-xl border border-[#E5E3DC] space-y-4">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#C85A32] block mb-1">
-                Frontera de Trabajo
-              </span>
-              <h2 className="text-lg font-bold text-[#141413] flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-[#C85A32]" />
-                <span>Contribución verificada de Lyberate</span>
-              </h2>
-            </div>
-            <p className="text-xs sm:text-sm text-[#141413] leading-relaxed bg-[#FBFBF9] p-4 rounded-lg border border-[#E5E3DC] font-medium">
-              {project.lyberateContribution}
-            </p>
-
-            {project.fullScope && (
-              <div className="pt-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#8A8881] mb-1">
-                  Alcance global del sistema:
-                </h4>
-                <p className="text-xs text-[#5C5B56] leading-relaxed">
-                  {project.fullScope}
-                </p>
-              </div>
-            )}
-          </section>
-
-          {/* Resultado verificable y Métricas auditadas (si existen) */}
-          <section className="bg-white p-6 sm:p-8 rounded-xl border border-[#E5E3DC] space-y-4">
-            <h2 className="text-lg font-bold text-[#141413] flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-              <span>Resultado y validación de calidad</span>
-            </h2>
-
-            {project.verifiableOutcome ? (
-              <p className="text-xs sm:text-sm text-[#5C5B56] leading-relaxed">
-                {project.verifiableOutcome}
-              </p>
-            ) : (
-              <p className="text-xs sm:text-sm text-[#5C5B56] leading-relaxed italic">
-                Proyecto verificado a nivel de código fuente y arquitectura sin métricas de rendimiento estimadas.
-              </p>
-            )}
-
-            {/* Métricas sólo si están verificadas con fuente */}
-            {project.metrics && project.metrics.length > 0 && (
-              <div className="pt-4 border-t border-[#F0EFEA] grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {project.metrics.map((metric) => (
-                  <div key={metric.label} className="p-4 rounded-lg bg-[#FBFBF9] border border-[#E5E3DC]">
-                    <span className="text-lg font-extrabold text-[#141413] font-mono block">
-                      {metric.value}
-                    </span>
-                    <span className="text-xs font-semibold text-[#C85A32] block mt-0.5">
-                      {metric.label}
-                    </span>
-                    {metric.source && (
-                      <span className="text-[10px] text-[#8A8881] block mt-1">
-                        Fuente: {metric.source}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+          <section className="rounded-2xl border border-[#E5E3DC] bg-white p-6 sm:p-8">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#7C3AED]">Sobre el proyecto</span>
+            <p className="mt-3 text-sm leading-relaxed text-[#5C5B56]">{project.summary}</p>
           </section>
 
           {/* Galería de capturas enriquecida (1 o más imágenes con visor iOS27) */}
@@ -258,8 +195,8 @@ export const ProjectDetailPage: React.FC = () => {
             <section className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold text-[#141413] flex items-center gap-2">
-                  <Layers className="w-5 h-5 text-[#C85A32]" />
-                  <span>Capturas y módulos del sistema ({project.gallery.length + 1} fotos)</span>
+                  <Layers className="w-5 h-5 text-[#7C3AED]" />
+                  <span>Galería del proyecto ({project.gallery.length + 1} imágenes)</span>
                 </h2>
                 <span className="text-xs text-[#8A8881]">Haz clic en cualquier imagen para ampliar</span>
               </div>
@@ -280,7 +217,7 @@ export const ProjectDetailPage: React.FC = () => {
                       />
                       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <span className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-semibold text-[#141413] flex items-center gap-1.5 shadow-sm">
-                          <Maximize2 className="w-3.5 h-3.5 text-[#C85A32]" />
+                          <Maximize2 className="w-3.5 h-3.5 text-[#7C3AED]" />
                           <span>Ampliar</span>
                         </span>
                       </div>
@@ -301,43 +238,26 @@ export const ProjectDetailPage: React.FC = () => {
             </section>
           )}
 
-          {/* Honestidad técnica */}
           <div className="p-4 rounded-lg bg-[#FBFBF9] border border-[#E5E3DC] text-xs text-[#5C5B56]">
-            <strong>Declaración de autoría honesta:</strong> Lyberate documenta exclusivamente los hechos verificables en repositorios y despliegues autorizados. No se publican métricas privadas ni derechos no otorgados.
+            <strong>Información del proyecto:</strong> Compartimos únicamente trabajos cuya presentación ha sido autorizada y evitamos publicar resultados que no hayan sido confirmados.
           </div>
         </div>
 
         {/* Sidebar Metadata (col-span-4) */}
         <div className="md:col-span-4 bg-white p-6 rounded-xl border border-[#E5E3DC] space-y-6">
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#8A8881] mb-3">
-              Tecnologías auditadas
-            </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {project.verifiedTechnologies.map((tech) => (
-                <span
-                  key={tech}
-                  className="text-xs font-medium text-[#141413] bg-[#F5F4EF] px-2.5 py-1 rounded-md border border-[#E5E3DC]"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
-          </div>
-
           <div className="pt-4 border-t border-[#F0EFEA] space-y-2">
             <span className="text-xs font-bold uppercase tracking-wider text-[#8A8881] block">
               Tipo de Relación
             </span>
             <div className="flex items-center gap-2 text-xs text-[#141413] font-medium">
-              <Tag className="w-4 h-4 text-[#C85A32]" />
+              <Tag className="w-4 h-4 text-[#7C3AED]" />
               <span>{rel.label}</span>
             </div>
           </div>
 
           <div className="pt-4 border-t border-[#F0EFEA] space-y-2">
             <span className="text-xs font-bold uppercase tracking-wider text-[#8A8881] block">
-              Estado Editorial
+              Publicación
             </span>
             <Badge variant="success" size="sm">
               Publicación autorizada
@@ -461,7 +381,7 @@ export const ProjectDetailPage: React.FC = () => {
                   type="button"
                   onClick={() => setLightboxIndex(idx)}
                   className={`w-16 h-12 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
-                    isSelected ? 'border-[#C85A32] scale-105 opacity-100 shadow-md' : 'border-white/20 opacity-50 hover:opacity-80'
+                    isSelected ? 'border-[#7C3AED] scale-105 opacity-100 shadow-md' : 'border-white/20 opacity-50 hover:opacity-80'
                   }`}
                 >
                   <img src={img.url} alt={img.alt} className="w-full h-full object-cover" />

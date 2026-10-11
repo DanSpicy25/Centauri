@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Globe,
   Plus,
@@ -57,9 +57,25 @@ export const SitesHubPage: React.FC = () => {
     setSites(siteRepository.getAllSites());
   };
 
+  useEffect(() => {
+    const handleUpdate = () => refreshList();
+    window.addEventListener('lyberate-sites-update', handleUpdate);
+    return () => window.removeEventListener('lyberate-sites-update', handleUpdate);
+  }, []);
+
   const showFeedback = (type: 'success' | 'error', text: string) => {
     setFeedback({ type, text });
     setTimeout(() => setFeedback(null), 4000);
+  };
+
+  const handleSimulateScenario = (siteId: string, scenario: 'available' | 'slow' | 'error' | 'recovered') => {
+    try {
+      const log = siteRepository.simulateScenario(siteId, scenario);
+      refreshList();
+      showFeedback('success', `Escenario simulado aplicado: ${log.message}`);
+    } catch {
+      showFeedback('error', 'Error al aplicar el escenario de demostración.');
+    }
   };
 
   // Comprobar un sitio individual
@@ -174,23 +190,23 @@ export const SitesHubPage: React.FC = () => {
   const connectedAnalyticsCount = sites.filter((s) => s.analyticsStatus === 'connected').length;
 
   return (
-    <div className="space-y-8 pb-20">
+    <div className="sites-hub-page space-y-8 pb-20">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#E5E3DC]">
+      <div className="sites-hub-heading flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#E5E3DC]">
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#F5F4EF] border border-[#E5E3DC] text-[11px] font-bold text-[#C85A32] mb-2">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#FAF5FF] border border-[#E9D5FF] text-[11px] font-bold text-[#7C3AED] mb-2">
             <Server className="w-3 h-3" />
-            <span>Fase 05 — Centro de Sitios Gestionados</span>
+            <span>Presencia digital · {totalSites} sitios</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#141413] tracking-tight font-editorial-heading">
-            Inventario & Monitoreo de Sitios
+            Tus sitios, de un vistazo
           </h1>
           <p className="text-sm text-[#5C5B56] mt-1 max-w-2xl font-editorial-body">
-            Supervisión técnica de disponibilidad, latencia y entorno de los sitios de Lyberate y clientes sin invención de datos ni suposiciones de acceso privado.
+            Consulta su estado, revisa los tiempos de respuesta y organiza la información de los sitios propios y de tus clientes.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="sites-hub-actions flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -274,11 +290,11 @@ export const SitesHubPage: React.FC = () => {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-[#E5E3DC]">
+      <div className="sites-metrics-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="admin-metric-card bg-white p-5 rounded-xl border border-[#E5E3DC]">
           <div className="flex items-center justify-between text-xs font-semibold text-[#8A8881] mb-2">
             <span>SITIOS SUPERVISADOS</span>
-            <Globe className="w-4 h-4 text-[#C85A32]" />
+            <Globe className="w-4 h-4 text-[#7C3AED]" />
           </div>
           <div className="text-2xl font-bold text-[#141413]">{totalSites}</div>
           <p className="text-xs text-[#5C5B56] mt-1">
@@ -286,7 +302,7 @@ export const SitesHubPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-[#E5E3DC]">
+        <div className="admin-metric-card bg-white p-5 rounded-xl border border-[#E5E3DC]">
           <div className="flex items-center justify-between text-xs font-semibold text-[#8A8881] mb-2">
             <span>ESTADO DE DISPONIBILIDAD</span>
             <Activity className="w-4 h-4 text-emerald-600" />
@@ -297,7 +313,7 @@ export const SitesHubPage: React.FC = () => {
           <p className="text-xs text-[#5C5B56] mt-1">Comprobaciones HTTP de solo lectura</p>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-[#E5E3DC]">
+        <div className="admin-metric-card bg-white p-5 rounded-xl border border-[#E5E3DC]">
           <div className="flex items-center justify-between text-xs font-semibold text-[#8A8881] mb-2">
             <span>LATENCIA PROMEDIO</span>
             <Zap className="w-4 h-4 text-amber-600" />
@@ -306,7 +322,7 @@ export const SitesHubPage: React.FC = () => {
           <p className="text-xs text-[#5C5B56] mt-1">Tiempo de respuesta a primer byte (TTFB)</p>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-[#E5E3DC]">
+        <div className="admin-metric-card bg-white p-5 rounded-xl border border-[#E5E3DC]">
           <div className="flex items-center justify-between text-xs font-semibold text-[#8A8881] mb-2">
             <span>HONESTIDAD DE ANALÍTICA</span>
             <ShieldCheck className="w-4 h-4 text-blue-600" />
@@ -319,13 +335,13 @@ export const SitesHubPage: React.FC = () => {
       </div>
 
       {/* Filters & Search Toolbar */}
-      <div className="bg-white p-4 rounded-xl border border-[#E5E3DC] flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="admin-toolbar bg-white p-4 rounded-xl border border-[#E5E3DC] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 absolute left-3 top-3 text-[#8A8881]" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por dominio, nombre, stack o responsable..."
+            placeholder="Buscar por dominio, nombre o responsable..."
             className="pl-9 text-xs"
           />
         </div>
@@ -370,6 +386,17 @@ export const SitesHubPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Demo Telemetry Explanation Banner */}
+      <div className="bg-[#FAF5FF] border border-[#E9D5FF] rounded-xl p-4 flex items-start gap-3">
+        <Activity className="w-5 h-5 text-[#7C3AED] shrink-0 mt-0.5" />
+        <div className="text-xs text-[#581C87] leading-relaxed">
+          <p className="font-bold mb-0.5">Entorno de Demostración Frontend · Simulación de Telemetría</p>
+          <p className="text-[#6B21A8]">
+            La disponibilidad, latencia e incidentes mostrados operan con mocks locales tipados. Utiliza los botones de <span className="font-bold">«Simular Escenario»</span> en cada fila para evaluar en vivo cómo responden las alertas, el gráfico de latencia y el historial antes de enlazar los webhooks definitivos del backend.
+          </p>
+        </div>
+      </div>
+
       {/* Directory Table */}
       <div className="bg-white rounded-xl border border-[#E5E3DC] overflow-hidden">
         <div className="overflow-x-auto">
@@ -383,7 +410,7 @@ export const SitesHubPage: React.FC = () => {
                 <th className="px-6 py-3.5">SSL</th>
                 <th className="px-6 py-3.5">Analítica</th>
                 <th className="px-6 py-3.5">Última Comprobación</th>
-                <th className="px-6 py-3.5 text-right">Acciones</th>
+                <th className="px-6 py-3.5 text-right">Escenarios & Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F0EFEA]">
@@ -408,7 +435,7 @@ export const SitesHubPage: React.FC = () => {
                         href={site.canonicalUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[11px] font-mono text-[#8A8881] hover:text-[#C85A32] flex items-center gap-1 mt-0.5 w-fit"
+                        className="text-[11px] font-mono text-[#8A8881] hover:text-[#7C3AED] flex items-center gap-1 mt-0.5 w-fit"
                       >
                         <span>{site.canonicalUrl}</span>
                         <ExternalLink className="w-3 h-3" />
@@ -506,45 +533,85 @@ export const SitesHubPage: React.FC = () => {
                     </td>
 
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleCheckSite(site.id)}
-                          className="p-1.5 text-[#5C5B56] hover:text-[#141413] hover:bg-[#F5F4EF] rounded-lg transition-colors cursor-pointer"
-                          title="Comprobar salud HTTP ahora"
-                        >
-                          <RefreshCw className="w-3.5 h-3.5" />
-                        </button>
+                      <div className="flex items-center justify-end gap-2 flex-wrap">
+                        {/* Escenario Demo Trigger Group */}
+                        <div className="flex items-center gap-1 bg-[#F5F4EF] p-1 rounded-lg border border-[#E5E3DC]">
+                          <span className="text-[9px] uppercase tracking-wider font-bold text-[#8A8881] px-1">Demo:</span>
+                          <button
+                            type="button"
+                            onClick={() => handleSimulateScenario(site.id, 'available')}
+                            className="px-1.5 py-0.5 text-[10px] font-mono rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 transition-colors cursor-pointer"
+                            title="Simular 200 OK (115ms)"
+                          >
+                            200 OK
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSimulateScenario(site.id, 'slow')}
+                            className="px-1.5 py-0.5 text-[10px] font-mono rounded bg-amber-100 hover:bg-amber-200 text-amber-800 transition-colors cursor-pointer"
+                            title="Simular Latenica Alta (>800ms)"
+                          >
+                            Lento
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSimulateScenario(site.id, 'error')}
+                            className="px-1.5 py-0.5 text-[10px] font-mono rounded bg-red-100 hover:bg-red-200 text-red-800 transition-colors cursor-pointer"
+                            title="Simular Caída 503"
+                          >
+                            Caído
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSimulateScenario(site.id, 'recovered')}
+                            className="px-1.5 py-0.5 text-[10px] font-mono rounded bg-violet-100 hover:bg-violet-200 text-violet-800 transition-colors cursor-pointer"
+                            title="Simular Recuperado a 200 OK"
+                          >
+                            Restablecer
+                          </button>
+                        </div>
 
-                        <button
-                          type="button"
-                          onClick={() => handleOpenHistory(site)}
-                          className="p-1.5 text-[#5C5B56] hover:text-[#141413] hover:bg-[#F5F4EF] rounded-lg transition-colors cursor-pointer"
-                          title="Ver historial de pings"
-                        >
-                          <History className="w-3.5 h-3.5" />
-                        </button>
+                        {/* Standard Actions */}
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleCheckSite(site.id)}
+                            className="p-1.5 text-[#5C5B56] hover:text-[#141413] hover:bg-[#F5F4EF] rounded-lg transition-colors cursor-pointer"
+                            title="Comprobar salud HTTP ahora"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                          </button>
 
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingSite({ ...site });
-                            setIsNewSite(false);
-                          }}
-                          className="p-1.5 text-[#5C5B56] hover:text-[#141413] hover:bg-[#F5F4EF] rounded-lg transition-colors cursor-pointer"
-                          title="Editar metadatos"
-                        >
-                          <Edit className="w-3.5 h-3.5" />
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenHistory(site)}
+                            className="p-1.5 text-[#5C5B56] hover:text-[#141413] hover:bg-[#F5F4EF] rounded-lg transition-colors cursor-pointer"
+                            title="Ver historial de pings"
+                          >
+                            <History className="w-3.5 h-3.5" />
+                          </button>
 
-                        <button
-                          type="button"
-                          onClick={() => setDeleteConfirmId(site.id)}
-                          className="p-1.5 text-[#8A8881] hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                          title="Eliminar del inventario"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingSite({ ...site });
+                              setIsNewSite(false);
+                            }}
+                            className="p-1.5 text-[#5C5B56] hover:text-[#141413] hover:bg-[#F5F4EF] rounded-lg transition-colors cursor-pointer"
+                            title="Editar metadatos"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setDeleteConfirmId(site.id)}
+                            className="p-1.5 text-[#8A8881] hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                            title="Eliminar del inventario"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -815,4 +882,3 @@ export const SitesHubPage: React.FC = () => {
     </div>
   );
 };
-

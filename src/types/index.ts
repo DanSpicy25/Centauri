@@ -100,3 +100,7 @@ export * from './cms';
 export * from './sites';
 export * from './crm';
 export * from './ecosystem';
+export * from './inquiries';
+export * from './projects';
+export * from './payments';
+export * from './messaging';

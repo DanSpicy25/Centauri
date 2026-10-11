@@ -28,7 +28,7 @@ export const FloatingContactWidget: React.FC = () => {
         <div className="mb-3 w-80 bg-white/95 backdrop-blur-2xl rounded-2xl p-4 shadow-2xl border border-[#E5E3DC] animate-fadeIn text-xs text-[#141413]">
           <div className="flex items-center justify-between pb-3 border-b border-[#F0EFEA]">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-[#C85A32] text-white flex items-center justify-center font-bold text-xs">
+              <div className="w-7 h-7 rounded-lg bg-[#7C3AED] text-white flex items-center justify-center font-bold text-xs">
                 L
               </div>
               <div>
@@ -68,7 +68,7 @@ export const FloatingContactWidget: React.FC = () => {
               className="flex items-center justify-between p-2.5 rounded-xl bg-[#FBFBF9] hover:bg-[#F5F4EF] text-[#141413] border border-[#E5E3DC] transition-colors cursor-pointer group"
             >
               <div className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-[#C85A32]" />
+                <Mail className="w-4 h-4 text-[#7C3AED]" />
                 <div>
                   <span className="font-bold block">Enviar Correo Directo</span>
                   <span className="text-[10px] text-[#8A8881]">{activeProfile.email}</span>
@@ -98,7 +98,7 @@ export const FloatingContactWidget: React.FC = () => {
               <Shield className="w-3 h-3 text-emerald-600" />
               Ingeniería a Medida
             </span>
-            <Link to="/admin" className="hover:text-[#C85A32] underline" onClick={() => setIsOpen(false)}>
+            <Link to="/admin" className="hover:text-[#7C3AED] underline" onClick={() => setIsOpen(false)}>
               Control Room
             </Link>
           </div>
@@ -114,7 +114,7 @@ export const FloatingContactWidget: React.FC = () => {
       >
         <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
         <span className="text-xs font-bold tracking-wide">¿Hablamos?</span>
-        <MessageSquare className="w-4 h-4 text-[#C85A32]" />
+        <MessageSquare className="w-4 h-4 text-[#7C3AED]" />
       </button>
     </div>
   );

@@ -221,7 +221,7 @@ export const DesignSystemShowcase: React.FC = () => {
                 <CardContent className="text-xs text-[#5C5B56]">
                   Respuesta visual sutil sin saltos bruscos de layout.
                 </CardContent>
-                <CardFooter className="text-xs font-semibold text-[#C85A32]">
+                <CardFooter className="text-xs font-semibold text-[#7C3AED]">
                   <span>Explorar →</span>
                 </CardFooter>
               </Card>

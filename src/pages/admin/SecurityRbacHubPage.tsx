@@ -15,6 +15,8 @@ import {
   Copy,
   Check,
   RotateCcw,
+  Fingerprint,
+  Smartphone,
 } from 'lucide-react';
 import {
   securityRepository,
@@ -32,6 +34,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Tabs } from '../../components/ui/Tabs';
 import { Select } from '../../components/ui/Select';
 import { Input } from '../../components/ui/Input';
+import { mockBackendRepository, TrustedDevice } from '../../repositories/mockBackendRepository';
 
 export const SecurityRbacHubPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'integrations' | 'rbac' | 'webhooks' | 'audit'>('integrations');
@@ -54,6 +57,14 @@ export const SecurityRbacHubPage: React.FC = () => {
   // Matriz de pruebas de permisos
   const [testModule, setTestModule] = useState<SystemModule>('finance');
   const [testAction, setTestAction] = useState<ModuleAction>('manage_secrets');
+  const currentSession = mockBackendRepository.getSession();
+  const [currentPin, setCurrentPin] = useState('');
+  const [newPin, setNewPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [pinError, setPinError] = useState<string | null>(null);
+  const [trustedDevices, setTrustedDevices] = useState<TrustedDevice[]>(() =>
+    currentSession ? mockBackendRepository.getTrustedDevices(currentSession.profileId) : []
+  );
 
   const roles = securityRepository.getRoles();
   const currentRoleDef = roles.find((r) => r.role === activeRole) || roles[0];
@@ -136,6 +147,39 @@ export const SecurityRbacHubPage: React.FC = () => {
     }
   };
 
+  const handlePinChange = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setPinError(null);
+    if (!currentSession) {
+      setPinError('Inicia sesión para cambiar el PIN de esta cuenta.');
+      return;
+    }
+    if (newPin !== confirmPin) {
+      setPinError('La confirmación no coincide con el nuevo PIN.');
+      return;
+    }
+    try {
+      mockBackendRepository.changePin(currentSession.profileId, currentPin, newPin);
+      setCurrentPin('');
+      setNewPin('');
+      setConfirmPin('');
+      showNotification('PIN actualizado. En tu próximo acceso vuelve a usar este nuevo PIN.');
+    } catch (error) {
+      setPinError(error instanceof Error ? error.message : 'No se pudo actualizar el PIN.');
+    }
+  };
+
+  const handleRevokeDevice = (deviceId: string) => {
+    if (!currentSession) return;
+    try {
+      mockBackendRepository.revokeTrustedDevice(currentSession.profileId, deviceId);
+      setTrustedDevices(mockBackendRepository.getTrustedDevices(currentSession.profileId));
+      showNotification('Dispositivo eliminado de la lista de confianza.');
+    } catch (error) {
+      showNotification(error instanceof Error ? error.message : 'No se pudo retirar el dispositivo.');
+    }
+  };
+
   // Filtrado de auditoría
   const filteredAuditLogs = auditLogs.filter((log) => {
     const matchesSearch =
@@ -178,7 +222,7 @@ export const SecurityRbacHubPage: React.FC = () => {
           className="bg-[#141413] text-white text-xs px-4 py-3 rounded-xl shadow-lg border border-[#3E3D38] flex items-center justify-between animate-fadeIn"
         >
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-[#C85A32]" />
+            <ShieldCheck className="w-4 h-4 text-[#7C3AED]" />
             <span className="font-medium">{feedbackNotice}</span>
           </div>
           <button
@@ -207,7 +251,7 @@ export const SecurityRbacHubPage: React.FC = () => {
 
         <div className="flex flex-wrap items-center gap-2.5">
           <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-[#E5E3DC] shadow-xs">
-            <Users className="w-4 h-4 text-[#C85A32]" />
+            <Users className="w-4 h-4 text-[#7C3AED]" />
             <span className="text-xs text-[#5C5B56] font-medium">Simular Rol:</span>
             <select
               value={activeRole}
@@ -257,7 +301,7 @@ export const SecurityRbacHubPage: React.FC = () => {
         <div className="bg-white/90 backdrop-blur-md rounded-2xl p-4 border border-[#E5E3DC] shadow-xs hover:border-[#D5D3CC] transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-[#5C5B56]">Rol Activo en Sesión</span>
-            <div className="w-7 h-7 rounded-lg bg-[#FBF1EC] flex items-center justify-center text-[#C85A32]">
+            <div className="w-7 h-7 rounded-lg bg-[#F5F3FF] flex items-center justify-center text-[#7C3AED]">
               <ShieldCheck className="w-4 h-4" />
             </div>
           </div>
@@ -309,6 +353,56 @@ export const SecurityRbacHubPage: React.FC = () => {
         </div>
       </div>
 
+      <section className="grid grid-cols-1 gap-5 xl:grid-cols-2" aria-label="Acceso local de socio">
+        <form onSubmit={handlePinChange} className="rounded-2xl border border-[#E5E3DC] bg-white p-5 shadow-xs">
+          <div className="mb-4 flex items-start gap-3">
+            <div className="rounded-xl bg-[#F5F3FF] p-2 text-[#7C3AED]"><Lock className="h-4 w-4" /></div>
+            <div>
+              <h2 className="text-sm font-bold text-[#141413]">Cambiar tu PIN local</h2>
+              <p className="mt-1 text-xs leading-relaxed text-[#5C5B56]">Se modifica únicamente el PIN de la cuenta que inició sesión.</p>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Input label="PIN actual" type="password" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={currentPin} onChange={(event) => setCurrentPin(event.target.value.replace(/\D/g, '').slice(0, 6))} required />
+            <Input label="PIN nuevo" type="password" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={newPin} onChange={(event) => setNewPin(event.target.value.replace(/\D/g, '').slice(0, 6))} required />
+            <Input label="Confirmar PIN" type="password" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={confirmPin} onChange={(event) => setConfirmPin(event.target.value.replace(/\D/g, '').slice(0, 6))} required />
+          </div>
+          {pinError && <p className="mt-3 text-xs font-medium text-red-700" role="alert">{pinError}</p>}
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <p className="max-w-sm text-[11px] leading-relaxed text-amber-800">Mock local: el PIN se guarda en localStorage y no protege frente a alguien con acceso al navegador.</p>
+            <Button type="submit" size="sm" variant="primary">Guardar PIN</Button>
+          </div>
+        </form>
+
+        <div className="rounded-2xl border border-[#E5E3DC] bg-white p-5 shadow-xs">
+          <div className="mb-4 flex items-start gap-3">
+            <div className="rounded-xl bg-[#F5F4EF] p-2 text-[#7C3AED]"><Fingerprint className="h-4 w-4" /></div>
+            <div>
+              <h2 className="text-sm font-bold text-[#141413]">Navegadores de confianza</h2>
+              <p className="mt-1 text-xs leading-relaxed text-[#5C5B56]">Identificación simulada por navegador local; no incluye detección de IP.</p>
+            </div>
+          </div>
+          {trustedDevices.length === 0 ? (
+            <p className="rounded-xl bg-[#FBFBF9] p-4 text-xs text-[#8A8881]">No hay dispositivos recordados para esta cuenta.</p>
+          ) : (
+            <ul className="space-y-2">
+              {trustedDevices.map((device) => (
+                <li key={device.id} className="flex items-center justify-between gap-3 rounded-xl border border-[#F0EFEA] p-3">
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <Smartphone className="h-4 w-4 shrink-0 text-[#8A8881]" />
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold text-[#141413]">{device.label}</p>
+                      <p className="text-[10px] text-[#8A8881]">Último acceso: {new Date(device.lastSeenAt).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <Button type="button" size="sm" variant="outline" onClick={() => handleRevokeDevice(device.id)}>Retirar</Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+
       {/* Tabs */}
       <Tabs
         activeTab={activeTab}
@@ -346,10 +440,10 @@ export const SecurityRbacHubPage: React.FC = () => {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-[#F5F4EF] flex items-center justify-center text-[#141413] shrink-0 font-bold">
-                        {item.category === 'cloud' && <Globe className="w-5 h-5 text-[#C85A32]" />}
-                        {item.category === 'email' && <Zap className="w-5 h-5 text-[#C85A32]" />}
-                        {item.category === 'messaging' && <Radio className="w-5 h-5 text-[#C85A32]" />}
-                        {item.category === 'satellite' && <Server className="w-5 h-5 text-[#C85A32]" />}
+                        {item.category === 'cloud' && <Globe className="w-5 h-5 text-[#7C3AED]" />}
+                        {item.category === 'email' && <Zap className="w-5 h-5 text-[#7C3AED]" />}
+                        {item.category === 'messaging' && <Radio className="w-5 h-5 text-[#7C3AED]" />}
+                        {item.category === 'satellite' && <Server className="w-5 h-5 text-[#7C3AED]" />}
                       </div>
                       <div>
                         <h3 className="text-sm font-bold text-[#141413]">{item.name}</h3>
@@ -369,7 +463,7 @@ export const SecurityRbacHubPage: React.FC = () => {
                   <div className="mt-4 p-3 bg-[#FBFBF9] rounded-xl border border-[#E5E3DC]">
                     <div className="flex items-center justify-between text-xs text-[#5C5B56] mb-1">
                       <span className="font-medium flex items-center gap-1.5">
-                        <Key className="w-3.5 h-3.5 text-[#C85A32]" />
+                        <Key className="w-3.5 h-3.5 text-[#7C3AED]" />
                         Secreto de API Enmascarado
                       </span>
                       <span className="font-mono text-[10px] uppercase text-[#8A8881]">
@@ -421,7 +515,7 @@ export const SecurityRbacHubPage: React.FC = () => {
                       onClick={() => handleRotateKey(item.id, item.name)}
                       title="Rotar inmediatamente clave de API"
                     >
-                      <RefreshCw className="w-3.5 h-3.5 mr-1 text-[#C85A32]" />
+                      <RefreshCw className="w-3.5 h-3.5 mr-1 text-[#7C3AED]" />
                       Rotar Clave
                     </Button>
                     <Button
@@ -450,7 +544,7 @@ export const SecurityRbacHubPage: React.FC = () => {
               </p>
             </div>
             <div className="text-xs font-medium text-[#5C5B56]">
-              Rol actualmente activo: <strong className="text-[#C85A32]">{activeRole.toUpperCase()}</strong>
+              Rol actualmente activo: <strong className="text-[#7C3AED]">{activeRole.toUpperCase()}</strong>
             </div>
           </div>
 
@@ -464,7 +558,7 @@ export const SecurityRbacHubPage: React.FC = () => {
                   onClick={() => handleRoleChange(r.role)}
                   className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
                     isSelected
-                      ? 'bg-[#FBF1EC] border-[#C85A32] shadow-sm ring-1 ring-[#C85A32]'
+                      ? 'bg-[#F5F3FF] border-[#7C3AED] shadow-sm ring-1 ring-[#7C3AED]'
                       : 'bg-white border-[#E5E3DC] hover:border-[#D5D3CC]'
                   }`}
                 >
@@ -474,7 +568,7 @@ export const SecurityRbacHubPage: React.FC = () => {
                         {r.role.toUpperCase()}
                       </Badge>
                       {isSelected && (
-                        <span className="text-[10px] font-bold text-[#C85A32] bg-white px-2 py-0.5 rounded-full border border-[#C85A32]/20">
+                        <span className="text-[10px] font-bold text-[#7C3AED] bg-white px-2 py-0.5 rounded-full border border-[#7C3AED]/20">
                           ACTIVO
                         </span>
                       )}
@@ -499,7 +593,7 @@ export const SecurityRbacHubPage: React.FC = () => {
           {/* Simulador de Verificación Rápida */}
           <div className="bg-white rounded-2xl p-5 border border-[#E5E3DC] shadow-xs">
             <h3 className="text-sm font-bold text-[#141413] flex items-center gap-2">
-              <Eye className="w-4 h-4 text-[#C85A32]" />
+              <Eye className="w-4 h-4 text-[#7C3AED]" />
               Probador Dinámico de Permiso para Rol [{activeRole.toUpperCase()}]
             </h3>
             <p className="text-xs text-[#5C5B56] mt-0.5">
@@ -616,7 +710,7 @@ export const SecurityRbacHubPage: React.FC = () => {
             <div>
               <h2 className="text-base font-bold text-[#141413]">Webhooks Salientes & Firmas Criptográficas HMAC</h2>
               <p className="text-xs text-[#5C5B56]">
-                Comprobación de entrega de eventos con cabecera <code className="font-mono text-[#C85A32]">X-Lyberate-Signature-256</code> y prevención contra replay attacks.
+                Comprobación de entrega de eventos con cabecera <code className="font-mono text-[#7C3AED]">X-Lyberate-Signature-256</code> y prevención contra replay attacks.
               </p>
             </div>
           </div>
@@ -679,7 +773,7 @@ export const SecurityRbacHubPage: React.FC = () => {
                     size="sm"
                     onClick={() => handleTestWebhook(wh.id)}
                   >
-                    <Radio className="w-3.5 h-3.5 mr-1 text-[#C85A32]" />
+                    <Radio className="w-3.5 h-3.5 mr-1 text-[#7C3AED]" />
                     Test de Entrega (Ping)
                   </Button>
                 </div>
@@ -690,7 +784,7 @@ export const SecurityRbacHubPage: React.FC = () => {
           {/* Guía Técnica de Firmas HMAC */}
           <div className="bg-[#141413] text-[#F5F4EF] rounded-2xl p-5 border border-[#2A2926]">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[#C85A32]" />
+              <ShieldCheck className="w-4 h-4 text-[#7C3AED]" />
               Especificación Criptográfica de Integración (ADR-002)
             </h3>
             <p className="text-xs text-[#8A8881] mt-1 leading-relaxed">
@@ -721,7 +815,7 @@ export const SecurityRbacHubPage: React.FC = () => {
               onClick={handleTestSanitization}
               title="Probar que los tokens son enmascarados como [REDACTED]"
             >
-              <Lock className="w-3.5 h-3.5 mr-1 text-[#C85A32]" />
+              <Lock className="w-3.5 h-3.5 mr-1 text-[#7C3AED]" />
               Probar Sanitizador de Secretos
             </Button>
           </div>
@@ -801,7 +895,7 @@ export const SecurityRbacHubPage: React.FC = () => {
                   <div className="flex items-center gap-3 shrink-0 text-[11px] text-[#8A8881]">
                     <div className="text-right">
                       <span className="font-bold text-[#141413] block">{log.actor}</span>
-                      <span className="font-mono text-[#C85A32]">{log.actorRole}</span>
+                      <span className="font-mono text-[#7C3AED]">{log.actorRole}</span>
                     </div>
                     <div className="bg-[#F5F4EF] px-2 py-1 rounded font-mono text-[#5C5B56]">
                       {log.ipAddress}

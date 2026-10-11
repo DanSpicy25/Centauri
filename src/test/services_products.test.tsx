@@ -43,7 +43,7 @@ describe('Fase 04 — Servicios & Productos (Catálogo & Planes)', () => {
     const planNames = desk?.plans?.map((p) => p.name);
     expect(planNames).toContain('Starter');
     expect(planNames).toContain('Business Pro');
-    expect(planNames).toContain('Enterprise SLA');
+    expect(planNames).toContain('Equipo ampliado');
   });
 
   it('ServicesPage y ProductsPage se exportan como componentes modulares', () => {

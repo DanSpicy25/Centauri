@@ -18,7 +18,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   return (
     <div className={`mb-10 ${align === 'center' ? 'text-center mx-auto max-w-2xl' : 'max-w-2xl'} ${className}`}>
       {eyebrow && (
-        <span className="text-xs font-bold uppercase tracking-widest text-[#C85A32] mb-2 block">
+        <span className="text-xs font-bold uppercase tracking-widest text-[#7C3AED] mb-2 block">
           {eyebrow}
         </span>
       )}

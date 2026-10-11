@@ -1,14 +1,10 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
   ArrowRight,
   ImageOff,
-  Pause,
-  Play,
   CheckCircle2,
-  Sparkles,
-  SlidersHorizontal,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ProjectDTO } from '../../types';
@@ -17,74 +13,42 @@ import { Button } from '../ui/Button';
 export interface ProjectCarouselProps {
   projects: ProjectDTO[];
   className?: string;
-  autoPlayIntervalMs?: number;
 }
 
 export const ProjectCarousel: React.FC<ProjectCarouselProps> = ({
   projects,
   className = '',
-  autoPlayIntervalMs = 5000,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imgError, setImgError] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const [activeView, setActiveView] = useState<'business' | 'technical'>('business');
-  const [progress, setProgress] = useState(0);
 
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const total = projects.length;
 
-  const nextSlide = useCallback(() => {
+  const showSlide = (index: number) => {
     setImgError(false);
-    setCurrentIndex((prev) => (prev + 1) % total);
-    setProgress(0);
-  }, [total]);
-
-  const prevSlide = useCallback(() => {
-    setImgError(false);
-    setCurrentIndex((prev) => (prev - 1 + total) % total);
-    setProgress(0);
-  }, [total]);
-
-  // Temporizador automático de 5 segundos con barra de progreso fluida (estilo iOS)
-  useEffect(() => {
-    if (total <= 1 || isPaused || isHovered) return;
-
-    const tickInterval = 50; // cada 50ms actualiza el progreso
-    const step = (tickInterval / autoPlayIntervalMs) * 100;
-
-    const timer = setInterval(() => {
-      setProgress((old) => {
-        if (old >= 100) {
-          nextSlide();
-          return 0;
-        }
-        return old + step;
-      });
-    }, tickInterval);
-
-    return () => clearInterval(timer);
-  }, [total, isPaused, isHovered, autoPlayIntervalMs, nextSlide]);
+    setCurrentIndex((index + total) % total);
+  };
+  const nextSlide = () => showSlide(currentIndex + 1);
+  const prevSlide = () => showSlide(currentIndex - 1);
 
   // Teclado
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowRight') {
+      e.preventDefault();
       nextSlide();
     } else if (e.key === 'ArrowLeft') {
-      prevSlide();
-    } else if (e.key === ' ') {
       e.preventDefault();
-      setIsPaused((p) => !p);
+      prevSlide();
     }
   };
 
   // Touch handlers para móviles
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.targetTouches[0].clientX;
+    touchEndX.current = null;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -92,7 +56,7 @@ export const ProjectCarousel: React.FC<ProjectCarouselProps> = ({
   };
 
   const handleTouchEnd = () => {
-    if (!touchStartX.current || !touchEndX.current) return;
+    if (touchStartX.current === null || touchEndX.current === null) return;
     const distance = touchStartX.current - touchEndX.current;
     const minSwipeDistance = 50;
 
@@ -124,30 +88,30 @@ export const ProjectCarousel: React.FC<ProjectCarouselProps> = ({
   const getDirectBusinessValue = (p: ProjectDTO) => {
     if (p.slug.includes('sagitta')) {
       return {
-        whatItDoes: 'Punto de venta y control total de inventario en vivo',
-        realBenefit: 'Permite cobrar en segundos, evitar pérdidas de mercancía y ver tus ganancias al instante desde cualquier dispositivo.',
-        solutionTags: ['Cero errores de caja', 'Inventario al día', 'Facturación rápida'],
+        whatItDoes: 'Ventas e inventario organizados en un solo lugar',
+        realBenefit: 'Ayuda a consultar existencias, registrar ventas y mantener la operación del negocio más ordenada.',
+        solutionTags: ['Ventas organizadas', 'Control de existencias', 'Información centralizada'],
       };
     }
     if (p.slug.includes('noticia')) {
       return {
-        whatItDoes: 'Periódico digital que nunca se cae y funciona sin internet',
-        realBenefit: 'Tus lectores pueden leer noticias aunque tengan mala señal móvil. Carga al instante y tu equipo puede redactar desde el teléfono.',
-        solutionTags: ['Carga instantánea', 'Lectura sin señal', 'Fácil de usar'],
+        whatItDoes: 'Un espacio digital para publicar y leer noticias',
+        realBenefit: 'Reúne el contenido editorial y facilita que el equipo publique y que los lectores encuentren las noticias.',
+        solutionTags: ['Contenido organizado', 'Publicación sencilla', 'Lectura desde el móvil'],
       };
     }
     if (p.slug.includes('motoindy') || p.slug.includes('metropolis')) {
       return {
-        whatItDoes: 'App para celulares con rastreo GPS y despachos en vivo',
-        realBenefit: 'Conecta clientes con conductores en tiempo real, calcula tarifas exactas y gestiona envíos sin llamadas manuales.',
-        solutionTags: ['Rastreo en mapa', 'Pagos automáticos', 'App para Android/iOS'],
+        whatItDoes: 'Una forma más clara de coordinar servicios y entregas',
+        realBenefit: 'Ayuda a reunir solicitudes, personas y seguimiento de operaciones en una misma experiencia.',
+        solutionTags: ['Seguimiento más claro', 'Información centralizada', 'Acceso desde el móvil'],
       };
     }
     // Caso genérico claro y directo
     return {
       whatItDoes: p.tagline || 'Plataforma digital a la medida',
-      realBenefit: p.summary || 'Sistema rápido, seguro y adaptado exactamente a las necesidades operativas de tu empresa.',
-      solutionTags: ['Hecho a medida', '100% independiente', 'Soporte garantizado'],
+      realBenefit: p.summary || 'Una solución digital pensada alrededor de las necesidades de tu negocio.',
+      solutionTags: ['A la medida', 'Fácil de consultar', 'Pensada para tu equipo'],
     };
   };
 
@@ -155,56 +119,31 @@ export const ProjectCarousel: React.FC<ProjectCarouselProps> = ({
 
   return (
     <div
-      ref={containerRef}
       onKeyDown={handleKeyDown}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       tabIndex={0}
-      aria-label="Carrusel automático de proyectos destacados. Avanza cada 5 segundos. Usa las flechas para navegar o espacio para pausar."
-      className={`relative bg-white/95 backdrop-blur-xl rounded-3xl border border-[#E5E3DC]/80 p-6 sm:p-10 shadow-[0_12px_40px_rgba(20,20,19,0.05)] focus-visible:outline-2 focus-visible:outline-[#C85A32] transition-all duration-300 ${className}`}
+      aria-label="Proyectos destacados. Usa las flechas izquierda y derecha para navegar."
+      className={`relative overflow-hidden rounded-[2rem] border border-[#E5E3DC]/80 bg-white/95 p-6 shadow-[0_24px_70px_rgba(20,20,19,0.08)] transition-all duration-500 focus-visible:outline-2 focus-visible:outline-[#7C3AED] sm:p-10 ${className}`}
     >
-      {/* Barra de progreso superior automática de 5s estilo iOS */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-[#F0EFEA] rounded-t-3xl overflow-hidden">
-        <div
-          className="h-full bg-gradient-to-r from-[#C85A32] to-[#E07A5F] transition-all duration-75 ease-linear"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-
-      {/* Header controls of the carousel */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#F0EFEA] mb-8">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 rounded-full bg-[#C85A32] animate-pulse" />
-            <span className="text-[11px] font-bold uppercase tracking-widest text-[#C85A32]">
-              Sistemas en Operación Real
+            <span className="w-2 h-2 rounded-full bg-[#7C3AED]" />
+            <span className="text-[11px] font-bold uppercase tracking-widest text-[#7C3AED]">
+              Proyectos seleccionados
             </span>
           </div>
           <h3 className="text-xl sm:text-2xl font-extrabold text-[#141413] tracking-tight font-editorial-heading">
             Lo que construimos en la práctica
           </h3>
           <p className="text-xs text-[#5C5B56] mt-0.5">
-            Software diseñado para resolver problemas de negocio reales, sin complicaciones técnicas.
+            Soluciones digitales creadas alrededor de necesidades reales.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Contador y pausa */}
-          <div className="flex items-center gap-2 bg-[#F5F4EF] px-3 py-1.5 rounded-full border border-[#E5E3DC]/60 text-xs font-mono">
-            <span className="font-bold text-[#141413]">0{currentIndex + 1}</span>
-            <span className="text-[#8A8881]">/</span>
-            <span className="text-[#8A8881]">0{total}</span>
-
-            <button
-              type="button"
-              onClick={() => setIsPaused((p) => !p)}
-              aria-label={isPaused ? 'Reanudar carrusel automático' : 'Pausar carrusel automático'}
-              className="ml-1 p-1 hover:text-[#C85A32] transition-colors cursor-pointer text-[#5C5B56]"
-              title={isPaused ? 'Reanudar rotación de 5s' : 'Pausar rotación de 5s'}
-            >
-              {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
-            </button>
-          </div>
+          <span className="rounded-full border border-[#E5E3DC] bg-[#FBFBF9] px-3 py-1.5 text-xs text-[#5C5B56]" aria-live="polite">
+            {currentIndex + 1} de {total}
+          </span>
 
           {/* Flechas táctiles con estética iOS redondeada */}
           <div className="flex items-center gap-1.5">
@@ -228,15 +167,14 @@ export const ProjectCarousel: React.FC<ProjectCarouselProps> = ({
         </div>
       </div>
 
-      {/* Main Slide Card with Touch Swipe */}
+      {/* Main project card with touch swipe */}
       <div
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
       >
-        {/* Visual Showcase (col-span-7) con estilo iOS Liquid Glass */}
-        <div className="lg:col-span-7 relative aspect-16/10 rounded-2xl overflow-hidden bg-[#F5F4EF] border border-[#E5E3DC] shadow-sm group">
+        <div key={currentProject.id} className="carousel-image-enter lg:col-span-7 relative aspect-16/10 overflow-hidden rounded-2xl border border-[#E5E3DC] bg-[#F5F4EF] shadow-lg group">
           {!imgError ? (
             <img
               src={currentProject.thumbnailUrl}
@@ -251,7 +189,7 @@ export const ProjectCarousel: React.FC<ProjectCarouselProps> = ({
             </div>
           )}
 
-          {/* Badges superiores translúcidos */}
+          {/* Project labels */}
           <div className="absolute top-4 left-4 flex flex-wrap gap-2">
             <span className="backdrop-blur-md bg-white/90 text-[#141413] text-xs font-semibold px-3 py-1 rounded-full border border-black/5 shadow-xs">
               {rel.label}
@@ -261,55 +199,24 @@ export const ProjectCarousel: React.FC<ProjectCarouselProps> = ({
             </span>
           </div>
 
-          {/* Indicador inferior de rotación de 5s */}
-          <div className="absolute bottom-3 left-4 text-[10px] text-white/90 backdrop-blur-md bg-black/40 px-2.5 py-1 rounded-full font-mono">
-            {isPaused || isHovered ? 'Rotación pausada al interactuar' : 'Cambio automático cada 5 seg.'}
+          {/* Project credit */}
+          <div className="absolute bottom-3 left-4 text-[10px] text-white/90 backdrop-blur-md bg-black/40 px-2.5 py-1 rounded-full">
+            {currentProject.thumbnailCredit || 'Proyecto Lyberate'}
           </div>
         </div>
 
         {/* Content Details (col-span-5) */}
         <div className="lg:col-span-5 space-y-5">
-          {/* Conmutador de modo: Modo Cliente (claro y directo) vs Modo Ficha Técnica */}
-          <div className="flex items-center gap-1 bg-[#F5F4EF] p-1 rounded-xl border border-[#E5E3DC] w-fit">
-            <button
-              type="button"
-              onClick={() => setActiveView('business')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                activeView === 'business'
-                  ? 'bg-white text-[#C85A32] shadow-xs'
-                  : 'text-[#5C5B56] hover:text-[#141413]'
-              }`}
-            >
-              <Sparkles className="w-3 h-3" />
-              <span>Para tu negocio</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveView('technical')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                activeView === 'technical'
-                  ? 'bg-white text-[#141413] shadow-xs'
-                  : 'text-[#5C5B56] hover:text-[#141413]'
-              }`}
-            >
-              <SlidersHorizontal className="w-3 h-3" />
-              <span>Ficha técnica</span>
-            </button>
-          </div>
-
-          {/* Título y Tagline */}
-          <div>
+          <div className="page-enter space-y-5" key={`${currentProject.id}-copy`} aria-live="polite">
             <h4 className="text-2xl sm:text-3xl font-extrabold text-[#141413] tracking-tight font-editorial-heading">
               {currentProject.name}
             </h4>
-            <p className="text-sm font-semibold text-[#C85A32] mt-1">
+            <p className="text-sm font-semibold text-[#7C3AED] mt-1">
               {businessInfo.whatItDoes}
             </p>
           </div>
 
-          {/* VISTA 1: PARA CLIENTES (SIN PALABRAS TÉCNICAS COMPLICADAS) */}
-          {activeView === 'business' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
+            <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-[#FBFBF9] border border-[#E5E3DC] space-y-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#8A8881] block">
                   ¿Cómo te beneficia este sistema?
@@ -322,7 +229,7 @@ export const ProjectCarousel: React.FC<ProjectCarouselProps> = ({
               {/* Beneficios directos en viñetas claras */}
               <div className="space-y-1.5">
                 <span className="text-[11px] font-semibold text-[#8A8881] uppercase tracking-wider block">
-                  Ventajas comprobadas:
+                  Aspectos destacados:
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {businessInfo.solutionTags.map((tag) => (
@@ -337,39 +244,7 @@ export const ProjectCarousel: React.FC<ProjectCarouselProps> = ({
                 </div>
               </div>
             </div>
-          )}
 
-          {/* VISTA 2: FICHA TÉCNICA (PARA INGENIEROS O AUDITORES) */}
-          {activeView === 'technical' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div className="p-3.5 rounded-2xl bg-[#FBFBF9] border border-[#E5E3DC] space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A8881] block">
-                  Aporte verificado de Lyberate:
-                </span>
-                <p className="text-xs text-[#141413] leading-normal font-mono">
-                  {currentProject.lyberateContribution}
-                </p>
-              </div>
-
-              <div>
-                <span className="text-[10px] font-semibold text-[#8A8881] uppercase tracking-wider block mb-1.5">
-                  Tecnologías auditadas:
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {currentProject.verifiedTechnologies.map((tech) => (
-                    <span
-                      key={tech}
-                      className="text-[11px] font-mono text-[#5C5B56] bg-[#F5F4EF] px-2.5 py-0.5 rounded-md border border-[#E5E3DC]"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* CTAs con estética iOS refinada */}
           <div className="pt-4 border-t border-[#F0EFEA] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <Link to={`/trabajos/${currentProject.slug}`}>
               <Button variant="primary" size="md" className="gap-2 rounded-full w-full sm:w-auto shadow-sm">
@@ -397,13 +272,11 @@ export const ProjectCarousel: React.FC<ProjectCarouselProps> = ({
               key={proj.id}
               type="button"
               onClick={() => {
-                setImgError(false);
-                setCurrentIndex(idx);
-                setProgress(0);
+                showSlide(idx);
               }}
               aria-label={`Ir a proyecto ${idx + 1}: ${proj.name}`}
               className={`h-2 rounded-full transition-all duration-300 cursor-pointer focus-visible:outline-2 ${
-                isActive ? 'w-8 bg-[#C85A32]' : 'w-2 bg-[#D1CEBF] hover:bg-[#8A8881]'
+                isActive ? 'w-8 bg-[#7C3AED]' : 'w-2 bg-[#D1CEBF] hover:bg-[#8A8881]'
               }`}
             />
           );

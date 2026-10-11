@@ -21,8 +21,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             id={checkboxId}
             disabled={disabled}
             aria-invalid={!!error}
-            className={`mt-0.5 w-4 h-4 rounded border-[#D1CEBF] text-[#C85A32] accent-[#C85A32]
-              focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C85A32]
+            className={`mt-0.5 w-4 h-4 rounded border-[#D1CEBF] text-[#7C3AED] accent-[#7C3AED]
+              focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7C3AED]
               disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
             {...props}
           />

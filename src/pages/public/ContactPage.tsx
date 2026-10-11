@@ -7,6 +7,7 @@ import {
   Info,
   Clock,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Textarea } from '../../components/ui/Textarea';
@@ -14,6 +15,7 @@ import { Select } from '../../components/ui/Select';
 import { Checkbox } from '../../components/ui/Checkbox';
 import { profileRepository } from '../../repositories/profileRepository';
 import { crmRepository } from '../../repositories/crmRepository';
+import { inquiryRepository } from '../../repositories/inquiryRepository';
 
 export const ContactPage: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
@@ -29,6 +31,7 @@ export const ContactPage: React.FC = () => {
     hp_website: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const founders = profileRepository.getProfiles();
   const valdez = founders.find((f) => f.id === 'valdez') || founders[0];
@@ -68,13 +71,42 @@ export const ContactPage: React.FC = () => {
     setErrors({});
     setLoading(true);
 
-    // Registro transparente en el CRM local del Control Room
+    // Registro transparente en el CRM y la Bandeja Central del Control Room
     try {
+      const needLabels: Record<string, string> = {
+        software: 'Desarrollo de Software & Plataformas',
+        consulting: 'Consultoría & Arquitectura Técnica',
+        integration: 'Integración de Herramientas & APIs',
+        maintenance: 'Mantenimiento & Continuidad Operativa',
+      };
+
+      const timelineLabels: Record<string, string> = {
+        immediate: 'Inmediato (< 1 mes)',
+        '1-3-months': '1 a 3 meses',
+        '3-6-months': '3 a 6 meses',
+        exploratory: 'Fase exploratoria / Evaluación',
+      };
+
+      // 1. Guardar en Bandeja Central de Consultas
+      inquiryRepository.createInquiry({
+        name: formData.name.trim(),
+        companyName: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim() || undefined,
+        needType: needLabels[formData.needType] || formData.needType,
+        timeline: timelineLabels[formData.timeline] || formData.timeline,
+        description: formData.description.trim(),
+        priority: 'high',
+        assignedPartner: 'Valdez',
+        notes: `Origen: Formulario Web Público. Plazo indicado: ${timelineLabels[formData.timeline] || formData.timeline}`,
+      });
+
+      // 2. Vincular como cliente prospecto y oportunidad en el CRM comercial
       const client = crmRepository.createClient({
         name: formData.name.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim() || undefined,
-        industry: `Solicitud web (${formData.needType})`,
+        industry: `Solicitud web (${needLabels[formData.needType] || formData.needType})`,
         notes: `Interés: ${formData.needType} | Plazo: ${formData.timeline} | Requerimiento: ${formData.description.trim()}`,
       });
 
@@ -83,31 +115,32 @@ export const ContactPage: React.FC = () => {
         clientId: client.id,
         clientName: client.name,
         stage: 'lead',
-        valueUsd: 2500, // Estimación base para calificación en CRM
+        valueUsd: 0,
         assignedPartner: 'Valdez',
         notes: formData.description.trim(),
       });
-    } catch {
-      // Continuar con la experiencia del usuario incluso en modo offline estricto
+    } catch (error) {
+      console.error('No se pudo registrar la solicitud en la demostración local.', error);
+      setSubmitError('No pudimos guardar la solicitud en este navegador. Inténtalo de nuevo o contáctanos por correo.');
+      setLoading(false);
+      return;
     }
 
-    setTimeout(() => {
-      setLoading(false);
-      setSubmitted(true);
-    }, 450);
+    setLoading(false);
+    setSubmitted(true);
   };
 
   const getWhatsAppMessage = () => {
     const text = `Hola Valdez, te escribo desde la web de Lyberate.%0A%0A*Nombre:* ${encodeURIComponent(
       formData.name || 'Cliente'
     )}%0A*Tipo de proyecto:* ${encodeURIComponent(formData.needType)}%0A*Detalles:* ${encodeURIComponent(
-      formData.description || 'Consulta sobre soluciones de software'
+      formData.description || 'Consulta sobre mi negocio'
     )}`;
     return `https://wa.me/${valdez.whatsappNumber.replace(/[^0-9]/g, '')}?text=${text}`;
   };
 
   const getMailtoLink = () => {
-    const subject = encodeURIComponent(`Consulta técnica: ${formData.needType} — ${formData.name}`);
+    const subject = encodeURIComponent(`Consulta sobre ${formData.needType} — ${formData.name}`);
     const body = encodeURIComponent(
       `Hola equipo de Lyberate,\n\nMi nombre es ${formData.name} (${formData.email}).\nTipo de requerimiento: ${formData.needType}\nPlazo estimado: ${formData.timeline}\n\nDescripción del proyecto:\n${formData.description}\n\nSaludos cordiales.`
     );
@@ -117,8 +150,8 @@ export const ContactPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-20">
       {/* 1. Header Editorial */}
-      <section className="max-w-3xl space-y-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5F4EF] border border-[#E5E3DC] text-xs font-semibold text-[#C85A32]">
+      <section className="max-w-3xl space-y-4" data-reveal>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5F4EF] border border-[#E5E3DC] text-xs font-semibold text-[#7C3AED]">
           <Sparkles className="w-3.5 h-3.5" />
           <span>Contacto Directo Sin Intermediarios</span>
         </div>
@@ -126,18 +159,18 @@ export const ContactPage: React.FC = () => {
           Hablemos directamente sobre tu proyecto
         </h1>
         <p className="text-base sm:text-lg text-[#5C5B56] leading-relaxed font-editorial-body">
-          Sin ejecutivos comerciales con respuestas prefabricadas. Analizamos los requerimientos operativos de tu empresa directamente con los ingenieros fundadores de Lyberate.
+          Habla directamente con los socios de Lyberate. Cuéntanos qué necesitas y te ayudaremos a encontrar el siguiente paso.
         </p>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start" data-reveal>
         {/* Columna Izquierda: Información de Contacto Real (col-span-5) */}
         <div className="lg:col-span-5 space-y-6">
           {/* Canales Directos Verificados */}
           <div className="p-7 rounded-3xl bg-white border border-[#E5E3DC] space-y-6 shadow-[0_12px_40px_rgba(20,20,19,0.04)]">
             <div className="flex items-center justify-between pb-3 border-b border-[#F0EFEA]">
               <span className="text-xs font-bold uppercase tracking-wider text-[#141413]">
-                Canales Oficiales Verificados
+                Canales de contacto
               </span>
               <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                 ACTIVOS
@@ -146,15 +179,15 @@ export const ContactPage: React.FC = () => {
 
             <div className="space-y-4 text-xs">
               <div className="flex items-start gap-3.5">
-                <div className="w-9 h-9 rounded-xl bg-[#F5F4EF] text-[#C85A32] flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center shrink-0">
                   <Mail className="w-4 h-4" />
                 </div>
                 <div>
                   <span className="font-bold text-[#141413] block">Correo Canónico del Estudio</span>
-                  <a href="mailto:contacto@lyberate.com" className="text-[#5C5B56] hover:text-[#C85A32] underline">
+                  <a href="mailto:contacto@lyberate.com" className="text-[#5C5B56] hover:text-[#7C3AED] underline">
                     contacto@lyberate.com
                   </a>
-                  <span className="text-[11px] text-[#8A8881] block mt-0.5">Respuestas en menos de 24 horas laborables</span>
+                  <span className="text-[11px] text-[#8A8881] block mt-0.5">Escríbenos directamente por correo</span>
                 </div>
               </div>
 
@@ -172,7 +205,7 @@ export const ContactPage: React.FC = () => {
                   >
                     {valdez.phone} (WhatsApp Business)
                   </a>
-                  <span className="text-[11px] text-[#8A8881] block mt-0.5">Atención técnica directa</span>
+                  <span className="text-[11px] text-[#8A8881] block mt-0.5">Atención directa</span>
                 </div>
               </div>
 
@@ -254,44 +287,50 @@ export const ContactPage: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <span className="text-xs font-mono font-bold text-[#C85A32] uppercase tracking-wider block">
-                  REGISTRO VALIDADO EN EL SISTEMA
+                <span className="text-xs font-mono font-bold text-[#7C3AED] uppercase tracking-wider block">
+                  REGISTRADA EN DEMO LOCAL DE CENTAURI
                 </span>
                 <h3 className="text-2xl font-extrabold text-[#141413] font-editorial-heading">
-                  Solicitud procesada y guardada localmente
+                  ¡Consulta recibida y guardada en el panel!
                 </h3>
                 <p className="text-xs sm:text-sm text-[#5C5B56] leading-relaxed">
-                  Gracias por comunicarte, <strong>{formData.name}</strong>. Tu requerimiento ha sido registrado en la bitácora interna de clientes (CRM) del Control Room.
+                  Gracias por escribirnos, <strong>{formData.name}</strong>. Tu requerimiento sobre <strong>{formData.needType}</strong> ha sido registrado en la bandeja local del <strong>Control Room Centauri</strong> para su revisión.
                 </p>
               </div>
 
-              {/* Aviso honesto de demo / transmisión real */}
-              <div className="p-4 rounded-2xl bg-[#FBFBF9] border border-[#E5E3DC] space-y-2 text-xs">
-                <div className="flex items-center gap-2 text-[#C85A32] font-bold">
+              {/* Aviso honesto de demo y acceso rápido al panel */}
+              <div className="p-4 rounded-2xl bg-[#FBFBF9] border border-[#E5E3DC] space-y-3 text-xs">
+                <div className="flex items-center gap-2 text-[#7C3AED] font-bold">
                   <Info className="w-4 h-4 shrink-0" />
-                  <span>Aviso de Transmisión Real Inmediata:</span>
+                  <span>Demostración de flujo completa activa:</span>
                 </div>
                 <p className="text-[#5C5B56] leading-relaxed">
-                  Para garantizar que tu mensaje llegue de inmediato y sin demoras a los fundadores, puedes despacharlo con un solo clic a través de WhatsApp o correo electrónico canónico:
+                  Esta consulta ya se encuentra disponible para los socios en la <strong>Bandeja Central de Consultas</strong> de Centauri. Puedes entrar al panel para revisarla, convertirla en propuesta o asignar responsable:
                 </p>
 
-                <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                <div className="pt-1 flex flex-wrap gap-2.5">
+                  <Link to="/admin">
+                    <Button variant="primary" size="sm" className="btn-press">
+                      Abrir en Centauri Control Room (/admin)
+                    </Button>
+                  </Link>
+
                   <a
                     href={getWhatsAppMessage()}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors shadow-xs"
+                    className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors shadow-xs"
                   >
                     <MessageSquare className="w-3.5 h-3.5" />
-                    <span>Enviar a WhatsApp con Valdez</span>
+                    <span>WhatsApp directo</span>
                   </a>
 
                   <a
                     href={getMailtoLink()}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-[#E5E3DC] hover:bg-[#F5F4EF] text-[#141413] font-bold text-xs transition-colors"
+                    className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white border border-[#E5E3DC] hover:bg-[#F5F4EF] text-[#141413] font-bold text-xs transition-colors"
                   >
                     <Mail className="w-3.5 h-3.5" />
-                    <span>Enviar por Correo Electrónico</span>
+                    <span>Abrir correo</span>
                   </a>
                 </div>
               </div>
@@ -325,9 +364,14 @@ export const ContactPage: React.FC = () => {
                   Formulario de Solicitud de Proyecto
                 </h3>
                 <p className="text-xs text-[#5C5B56] mt-0.5">
-                  Completa los datos para estructurar una evaluación técnica preliminar.
+                  Completa los datos para que podamos conocer tu necesidad. En esta versión, el formulario aún no envía mensajes al equipo.
                 </p>
               </div>
+              {submitError && (
+                <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-900">
+                  {submitError}
+                </div>
+              )}
 
               {/* Honeypot anti-spam */}
               <div className="hidden" aria-hidden="true">
@@ -378,11 +422,11 @@ export const ContactPage: React.FC = () => {
                   value={formData.needType}
                   onChange={(e) => setFormData({ ...formData, needType: e.target.value })}
                   options={[
-                    { value: 'software', label: 'Plataforma empresarial o POS (Sagitta)' },
-                    { value: 'saas', label: 'SaaS de Chat multicanal (LyberateDesk)' },
-                    { value: 'web', label: 'Desarrollo web o portal editorial' },
-                    { value: 'automatizacion', label: 'Automatización de mensajería y cobros' },
-                    { value: 'integracion', label: 'Integración de APIs y webhooks' },
+                    { value: 'software', label: 'Ventas, inventario y gestión (Sagitta)' },
+                    { value: 'saas', label: 'Atención de clientes (LyberateDesk)' },
+                    { value: 'web', label: 'Sitio web o portal de contenido' },
+                    { value: 'automatizacion', label: 'Mensajes y seguimiento de clientes' },
+                    { value: 'integracion', label: 'Conexión de herramientas que ya usas' },
                     { value: 'otro', label: 'Otro requerimiento a medida' },
                   ]}
                 />
@@ -395,7 +439,7 @@ export const ContactPage: React.FC = () => {
                 options={[
                   { value: 'immediate', label: 'Inmediato (menos de 2 semanas)' },
                   { value: '1-3-months', label: 'Planificado (1 a 3 meses)' },
-                  { value: 'exploration', label: 'Fase de evaluación técnica inicial' },
+                  { value: 'exploration', label: 'Estoy explorando opciones' },
                 ]}
               />
 

@@ -4,15 +4,11 @@ import {
   Sparkles,
   ShieldCheck,
   CheckCircle2,
-  Code2,
-  Cpu,
   Lock,
   MessageSquare,
   Globe,
   Layers,
-  Terminal,
   HelpCircle,
-  ExternalLink,
 } from 'lucide-react';
 import { SectionHeader } from '../../components/layout/SectionHeader';
 import { Button } from '../../components/ui/Button';
@@ -36,13 +32,13 @@ export const AboutPage: React.FC = () => {
   };
 
   const story = cmsContent.aboutStory || {
-    eyebrow: 'Sobre Nosotros & Filosofía',
-    title: 'Ingeniería de software con criterio, arquitectura sólida y presencia memorable',
+    eyebrow: 'Sobre Lyberate',
+    title: 'Creamos herramientas digitales útiles y fáciles de usar',
     leadParagraph:
-      'Lyberate nace de la visión conjunta de dos profesionales full-stack con una convicción innegociable: las organizaciones serias merecen software hecho a su medida, sin plantillas prefabricadas, sin dependencias frágiles y con absoluta transparencia técnica.',
+      'Somos un equipo que escucha primero y crea herramientas digitales pensando en las personas que las usan cada día.',
     bodyParagraphs: [
-      'Rechazamos de raíz el modelo de agencia tradicional que revende plantillas lentas de WordPress o sistemas SaaS cerrados donde el cliente nunca es dueño de su plataforma. Nosotros diseñamos, estructuramos y programamos cada componente desde sus cimientos para garantizar velocidad de carga instantánea, autonomía operativa y seguridad perimetral.',
-      'Trabajamos tanto en el desarrollo de productos propios de alta especialización (como Sagitta para punto de venta e inventarios, y LyberateDesk para atención al cliente multicanal) como en desarrollos a medida para empresas que necesitan sistemas financieros, comerciales, editoriales y de movilidad que nunca se caigan.',
+      'Cada negocio tiene una manera particular de trabajar. Por eso entendemos el problema contigo y proponemos una solución clara, con prioridades y próximos pasos acordados.',
+      'Creamos sitios, herramientas de gestión y productos propios. Durante el proyecto tendrás comunicación directa con las personas que lo llevan adelante.',
     ],
   };
 
@@ -50,10 +46,10 @@ export const AboutPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-24 sm:space-y-32">
       {/* 1. Encabezado & Declaración de Propósito Editorial */}
       {isSectionVisible('story') && (
-        <section className="relative">
+        <section className="relative" data-reveal>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5F4EF] border border-[#E5E3DC] text-xs font-semibold text-[#C85A32]">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5F4EF] border border-[#E5E3DC] text-xs font-semibold text-[#7C3AED]">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>{story.eyebrow}</span>
               </div>
@@ -91,7 +87,7 @@ export const AboutPage: React.FC = () => {
               <div className="bg-white p-7 sm:p-8 rounded-3xl border border-[#E5E3DC] shadow-[0_12px_40px_rgba(20,20,19,0.06)] space-y-6 relative overflow-hidden">
                 <div className="flex items-center justify-between pb-4 border-b border-[#F0EFEA]">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-[#C85A32]" />
+                    <div className="w-3 h-3 rounded-full bg-[#7C3AED]" />
                     <div className="w-3 h-3 rounded-full bg-[#D1CEBF]" />
                     <div className="w-3 h-3 rounded-full bg-[#E5E3DC]" />
                   </div>
@@ -101,35 +97,35 @@ export const AboutPage: React.FC = () => {
                 <div className="space-y-4 text-xs">
                   <div className="p-4 rounded-2xl bg-[#FBFBF9] border border-[#E5E3DC] space-y-1.5">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A8881] block">
-                      01 / Cero Plantillas Genéricas
+                      01 / Pensado para tu negocio
                     </span>
                     <p className="text-[#141413] font-medium leading-relaxed">
-                      Cada línea de código y cada pantalla responden al modelo de negocio particular de tu empresa. Sin diseños enlatados.
+                      Diseñamos cada experiencia alrededor de las personas, las tareas y las prioridades de tu equipo.
                     </p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-[#FBFBF9] border border-[#E5E3DC] space-y-1.5">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A8881] block">
-                      02 / Comunicación Directa con Creadores
+                      02 / Comunicación directa
                     </span>
                     <p className="text-[#141413] font-medium leading-relaxed">
-                      Hablas directamente con quienes diseñan y programan tu software, sin ejecutivos de ventas que prometen imposibles.
+                      Conversas con el equipo que conoce tu proyecto y puede acompañarte en cada etapa.
                     </p>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-[#FBFBF9] border border-[#E5E3DC] space-y-1.5">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A8881] block">
-                      03 / Soberanía e Independencia
+                      03 / Claridad y autonomía
                     </span>
                     <p className="text-[#141413] font-medium leading-relaxed">
-                      Tu empresa es dueña de su información y de su arquitectura. Diseñamos con código estándar sin ataduras artificiales.
+                      Explicamos las decisiones y te ayudamos a entender cómo aprovechar las herramientas que construimos.
                     </p>
                   </div>
                 </div>
 
                 <div className="pt-2 flex items-center justify-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 py-2.5 px-4 rounded-xl border border-emerald-200">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>Equipo senior full-stack enfocado en resultados</span>
+                  <span>Un equipo cercano, enfocado en resultados</span>
                 </div>
               </div>
             </div>
@@ -139,11 +135,11 @@ export const AboutPage: React.FC = () => {
 
       {/* 2. Los Socios Fundadores: Valdez & Socio Fundador (Estética iOS27) */}
       {isSectionVisible('team') && (
-        <section className="space-y-10">
+        <section className="space-y-10" data-reveal>
           <SectionHeader
             eyebrow="Socios Fundadores & Liderazgo"
             title="Quienes construimos y respaldamos cada proyecto"
-            description="Dos perfiles complementarios que aúnan la alta arquitectura de software, la gestión de operaciones y el diseño de producto con experiencia de usuario real."
+            description="Dos perfiles complementarios, unidos por el cuidado en los detalles y el acompañamiento cercano."
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -161,7 +157,7 @@ export const AboutPage: React.FC = () => {
                         style={{
                           boxShadow:
                             founder.id === 'valdez'
-                              ? '0 0 0 3px #FBFBF9, 0 0 0 6px #C85A32'
+                              ? '0 0 0 3px #FBFBF9, 0 0 0 6px #7C3AED'
                               : '0 0 0 3px #FBFBF9, 0 0 0 6px #141413',
                         }}
                       >
@@ -173,7 +169,7 @@ export const AboutPage: React.FC = () => {
                       </div>
 
                       <div>
-                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#C85A32] block">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#7C3AED] block">
                           SOCIO FUNDADOR
                         </span>
                         <h3 className="text-2xl font-extrabold text-[#141413] tracking-tight font-editorial-heading">
@@ -191,22 +187,6 @@ export const AboutPage: React.FC = () => {
                     {founder.bio}
                   </p>
 
-                  {/* Especialidades Full-Stack */}
-                  <div className="space-y-2 pt-2 border-t border-[#F0EFEA]">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#8A8881] block">
-                      Especialidades & Competencias:
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {founder.specialties.map((spec) => (
-                        <span
-                          key={spec}
-                          className="text-[11px] font-medium text-[#141413] bg-[#F5F4EF] px-3 py-1 rounded-full border border-[#E5E3DC]"
-                        >
-                          {spec}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
                 </div>
 
                 {/* Acciones de Contacto Directo */}
@@ -230,17 +210,6 @@ export const AboutPage: React.FC = () => {
                     </a>
                   </div>
 
-                  {founder.githubUrl && (
-                    <a
-                      href={founder.githubUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-semibold text-[#8A8881] hover:text-[#141413] inline-flex items-center gap-1 transition-colors"
-                    >
-                      <span>GitHub</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  )}
                 </div>
               </div>
             ))}
@@ -248,95 +217,44 @@ export const AboutPage: React.FC = () => {
         </section>
       )}
 
-      {/* 3. Stack Tecnológico & Radar de Ingeniería Full-Stack */}
-      <section className="bg-gradient-to-b from-[#141413] to-[#1C1B18] text-[#F5F4EF] p-8 sm:p-12 rounded-3xl border border-[#2A2926] shadow-2xl">
+      {/* 3. Forma de acompañar a cada cliente */}
+      <section className="bg-gradient-to-b from-[#141413] to-[#1C1B18] text-[#F5F4EF] p-8 sm:p-12 rounded-3xl border border-[#2A2926] shadow-2xl" data-reveal>
         <div className="max-w-3xl mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#201F1D] border border-[#2A2926] text-xs font-mono text-[#E07A5F] mb-3">
-            <Terminal className="w-3.5 h-3.5" />
-            <span>Arquitectura Sin Concesiones</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#201F1D] border border-[#2A2926] text-xs font-mono text-[#A78BFA] mb-3">
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>Una relación de trabajo clara</span>
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight font-editorial-heading">
-            El stack de alta precisión con el que construimos
+            Cercanía en cada etapa del proyecto
           </h2>
           <p className="text-sm text-[#8A8881] mt-3 leading-relaxed">
-            Elegimos tecnologías con tipado estricto, despliegue global instantáneo y capacidades sin conexión a internet. Sin librerías pesadas ni código improvisado.
+            Queremos que sepas qué estamos haciendo, por qué y qué viene después.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {/* Col 1 */}
-          <div className="bg-[#1C1B18]/90 p-6 rounded-2xl border border-[#3E3D38] flex flex-col justify-between">
-            <div className="space-y-3">
-              <span className="text-xs font-mono text-[#C85A32] font-bold block">01 / FRONTEND</span>
-              <h3 className="text-lg font-bold text-white">React 19 & TypeScript</h3>
-              <p className="text-xs text-[#8A8881] leading-relaxed">
-                Tipado estricto al 100%, Tailwind CSS v4 y diseño bespoke con estética iOS27. Carga en milisegundos con cero renderizados redundantes.
-              </p>
-            </div>
-            <div className="pt-4 border-t border-[#2A2926] flex flex-wrap gap-1.5 text-[10px] font-mono text-[#C5C3BC] mt-4">
-              <span className="bg-[#2A2926] px-2 py-0.5 rounded">React 19</span>
-              <span className="bg-[#2A2926] px-2 py-0.5 rounded">TS 5.7</span>
-              <span className="bg-[#2A2926] px-2 py-0.5 rounded">Tailwind v4</span>
-            </div>
-          </div>
-
-          {/* Col 2 */}
-          <div className="bg-[#1C1B18]/90 p-6 rounded-2xl border border-[#3E3D38] flex flex-col justify-between">
-            <div className="space-y-3">
-              <span className="text-xs font-mono text-[#C85A32] font-bold block">02 / EDGE & APIS</span>
-              <h3 className="text-lg font-bold text-white">Cloudflare Edge & Workers</h3>
-              <p className="text-xs text-[#8A8881] leading-relaxed">
-                Computación distribuida perimetral con firmas criptográficas HMAC SHA-256, políticas de reintento exponencial y latencia inferior a 50ms.
-              </p>
-            </div>
-            <div className="pt-4 border-t border-[#2A2926] flex flex-wrap gap-1.5 text-[10px] font-mono text-[#C5C3BC] mt-4">
-              <span className="bg-[#2A2926] px-2 py-0.5 rounded">Cloudflare</span>
-              <span className="bg-[#2A2926] px-2 py-0.5 rounded">HMAC SHA-256</span>
-              <span className="bg-[#2A2926] px-2 py-0.5 rounded">Webhooks</span>
-            </div>
-          </div>
-
-          {/* Col 3 */}
-          <div className="bg-[#1C1B18]/90 p-6 rounded-2xl border border-[#3E3D38] flex flex-col justify-between">
-            <div className="space-y-3">
-              <span className="text-xs font-mono text-[#C85A32] font-bold block">03 / DATOS & OFFLINE</span>
-              <h3 className="text-lg font-bold text-white">PostgreSQL & SQLite Sync</h3>
-              <p className="text-xs text-[#8A8881] leading-relaxed">
-                Arquitectura offline-first garantizada: tus puntos de venta y portales continúan cobrando y funcionando aún sin conexión a internet.
-              </p>
-            </div>
-            <div className="pt-4 border-t border-[#2A2926] flex flex-wrap gap-1.5 text-[10px] font-mono text-[#C5C3BC] mt-4">
-              <span className="bg-[#2A2926] px-2 py-0.5 rounded">PostgreSQL</span>
-              <span className="bg-[#2A2926] px-2 py-0.5 rounded">SQLite Sync</span>
-              <span className="bg-[#2A2926] px-2 py-0.5 rounded">IndexedDB</span>
-            </div>
-          </div>
-
-          {/* Col 4 */}
-          <div className="bg-[#1C1B18]/90 p-6 rounded-2xl border border-[#3E3D38] flex flex-col justify-between">
-            <div className="space-y-3">
-              <span className="text-xs font-mono text-[#C85A32] font-bold block">04 / SEGURIDAD & TDD</span>
-              <h3 className="text-lg font-bold text-white">RBAC & Vitest TDD</h3>
-              <p className="text-xs text-[#8A8881] leading-relaxed">
-                Suites de pruebas automatizadas al 100%, control de acceso basado en roles por privilegio mínimo y cabeceras de blindaje CSP L3 / HSTS.
-              </p>
-            </div>
-            <div className="pt-4 border-t border-[#2A2926] flex flex-wrap gap-1.5 text-[10px] font-mono text-[#C5C3BC] mt-4">
-              <span className="bg-[#2A2926] px-2 py-0.5 rounded">RBAC Mínimo</span>
-              <span className="bg-[#2A2926] px-2 py-0.5 rounded">Vitest 3</span>
-              <span className="bg-[#2A2926] px-2 py-0.5 rounded">CSP & HSTS</span>
-            </div>
-          </div>
+          {[
+            ['01 / ESCUCHA', 'Entendemos tu día a día', 'Conocemos tus objetivos, dificultades y la forma en que trabaja tu equipo.'],
+            ['02 / PLAN', 'Acordamos prioridades', 'Definimos juntos el alcance, las etapas y las decisiones importantes.'],
+            ['03 / AVANCES', 'Revisas mientras construimos', 'Compartimos avances para que puedas opinar y ajustar a tiempo.'],
+            ['04 / ACOMPAÑAMIENTO', 'Seguimos cerca', 'Te ayudamos a poner en marcha la solución y resolver tus dudas.'],
+          ].map(([step, title, description]) => (
+            <article key={step} className="rounded-2xl border border-[#3E3D38] bg-[#1C1B18]/90 p-6">
+              <span className="block text-xs font-semibold tracking-wider text-[#A78BFA]">{step}</span>
+              <h3 className="mt-4 text-lg font-semibold text-white">{title}</h3>
+              <p className="mt-3 text-xs leading-relaxed text-[#A8A69E]">{description}</p>
+            </article>
+          ))}
         </div>
       </section>
 
       {/* 4. Principios Innegociables de Trabajo */}
       {isSectionVisible('principles') && (
-        <section className="space-y-8">
+        <section className="space-y-8" data-reveal>
           <SectionHeader
             eyebrow="Nuestros Principios"
-            title="Criterios éticos y técnicos no negociables"
-            description="Reglas claras que rigen cada línea de código, cada contrato y cada entrega que realizamos."
+            title="Principios que guían nuestro trabajo"
+            description="Reglas claras para colaborar con respeto, transparencia y atención al detalle."
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -347,18 +265,18 @@ export const AboutPage: React.FC = () => {
                 icon: ShieldCheck,
               },
               {
-                title: 'Cero Bloatware',
-                desc: 'No añadimos librerías ni frameworks pesados sin justificación técnica demostrable de beneficio, mantenimiento y licencia.',
-                icon: Cpu,
+                title: 'Simplicidad útil',
+                desc: 'Buscamos soluciones fáciles de entender, mantener y usar en las tareas del día a día.',
+                icon: CheckCircle2,
               },
               {
-                title: 'Accesibilidad Universal (WCAG)',
-                desc: 'Diseñamos interfaces totalmente navegables por teclado, con contraste de color superior a 7:1 y respeto estricto por movimiento reducido.',
+                title: 'Diseño para todas las personas',
+                desc: 'Cuidamos la claridad, la lectura y el uso cómodo desde distintos dispositivos.',
                 icon: Globe,
               },
               {
-                title: 'Seguridad en el Servidor',
-                desc: 'El servidor es la única fuente de autoridad para permisos, sesiones y validaciones. Cero secretos en clientes o repositorios.',
+                title: 'Cuidado de la información',
+                desc: 'Tratamos los datos con responsabilidad y explicamos cómo se gestionan.',
                 icon: Lock,
               },
               {
@@ -369,14 +287,14 @@ export const AboutPage: React.FC = () => {
               {
                 title: 'Diseño Editorial Distintivo',
                 desc: 'Hacemos que cada proyecto sea visualmente propio, con tipografía calculada, jerarquía clara y sin aspecto de plantilla genérica de internet.',
-                icon: Code2,
+                icon: CheckCircle2,
               },
             ].map((principle) => {
               const Icon = principle.icon;
               return (
                 <Card key={principle.title} variant="default" className="hover:border-[#D1CEBF] transition-colors">
                   <CardHeader>
-                    <div className="w-10 h-10 rounded-xl bg-[#F5F4EF] flex items-center justify-center text-[#C85A32] mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#F5F3FF] flex items-center justify-center text-[#7C3AED] mb-3">
                       <Icon className="w-5 h-5" />
                     </div>
                     <CardTitle className="text-base font-bold text-[#141413]">
@@ -395,7 +313,7 @@ export const AboutPage: React.FC = () => {
 
       {/* 5. Preguntas Frecuentes (FAQ) */}
       {isSectionVisible('faq') && (
-        <section className="max-w-4xl mx-auto space-y-8">
+        <section className="max-w-4xl mx-auto space-y-8" data-reveal>
           <SectionHeader
             eyebrow="Resolviendo Dudas"
             title="Preguntas frecuentes sobre trabajar con nosotros"
@@ -405,31 +323,31 @@ export const AboutPage: React.FC = () => {
           <div className="space-y-4">
             {[
               {
-                q: '¿Por qué no utilizan WordPress o plantillas prefabricadas de SaaS?',
-                a: 'Las plantillas genéricas sufren de código inflado, vulnerabilidades constantes de plugins de terceros y caídas de rendimiento inaceptables. Construimos con React 19 y arquitectura a medida para que tu plataforma cargue en milisegundos, sea 100% tuya y nunca dependa de las limitaciones de un creador visual genérico.',
+                q: '¿Cómo deciden qué solución necesita mi negocio?',
+                a: 'Primero conversamos sobre tus objetivos y tu forma de trabajar. Después te proponemos opciones y acordamos el alcance antes de comenzar.',
               },
               {
                 q: '¿Con quién hablaré durante el desarrollo de mi proyecto?',
-                a: 'Hablarás directamente con Valdez y su socio fundador. No delegamos la comunicación técnica en gestores comerciales sin conocimientos de programación. Quienes te atienden son los mismos ingenieros responsables de la arquitectura de tu software.',
+                a: 'Te comunicarás directamente con los socios que acompañan y llevan adelante cada proyecto.',
               },
               {
                 q: '¿Qué diferencia hay entre Centauri y Lyberate?',
-                a: 'Centauri es el nombre en clave de la arquitectura central de ingeniería, la infraestructura privada y el Control Room de gobernanza. Lyberate es la marca pública oficial del estudio y la cara visible de nuestros productos y servicios comerciales.',
+                a: 'Lyberate es la marca con la que presentamos nuestro trabajo. Centauri es el nombre que usamos para el espacio interno de gestión.',
               },
               {
-                q: '¿Pueden integrar nuestro nuevo software con nuestros sistemas actuales?',
-                a: 'Absolutamente. Diseñamos adaptadores desacoplados y webhooks seguros para conectarnos con bases de datos SQL existentes, pasarelas de pago, WhatsApp Cloud API o servicios legados sin necesidad de tirar abajo la infraestructura que ya funciona.',
+                q: '¿Pueden conectar las herramientas que ya utilizamos?',
+                a: 'En muchos casos sí. Revisamos las herramientas que ya utilizas y conversamos sobre las opciones para conectarlas sin interrumpir tu operación.',
               },
               {
-                q: '¿Cómo garantizan que el sistema no se caiga si se corta internet?',
-                a: 'Para sistemas de caja y gestión crítica (como Sagitta), implementamos arquitectura offline-first con SQLite o IndexedDB local. Tu negocio puede seguir cobrando y despachando sin internet, y cuando la red vuelve, los datos se sincronizan automáticamente con el servidor.',
+                q: '¿Puedo conocer los avances antes de que el proyecto esté terminado?',
+                a: 'Sí. Acordamos revisiones durante el proyecto para que puedas ver el progreso, compartir comentarios y mantenerte al tanto.',
               },
             ].map((faq) => (
               <div
                 key={faq.q}
                 className="p-6 rounded-2xl bg-white border border-[#E5E3DC] space-y-2 hover:border-[#D1CEBF] transition-colors"
               >
-                <div className="flex items-center gap-2 text-[#C85A32]">
+                <div className="flex items-center gap-2 text-[#7C3AED]">
                   <HelpCircle className="w-4 h-4 shrink-0" />
                   <h4 className="text-sm sm:text-base font-bold text-[#141413]">{faq.q}</h4>
                 </div>
@@ -441,16 +359,16 @@ export const AboutPage: React.FC = () => {
       )}
 
       {/* 6. Llamada a la Acción (CTA) Final */}
-      <section className="text-center">
+      <section className="text-center" data-reveal>
         <div className="max-w-2xl mx-auto space-y-5 bg-white p-8 sm:p-12 rounded-3xl border border-[#E5E3DC] shadow-[0_12px_40px_rgba(20,20,19,0.04)]">
-          <div className="w-12 h-12 rounded-2xl bg-[#F5F4EF] text-[#C85A32] flex items-center justify-center mx-auto">
+          <div className="w-12 h-12 rounded-2xl bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center mx-auto">
             <CheckCircle2 className="w-6 h-6" />
           </div>
           <h2 className="text-3xl font-extrabold tracking-tight text-[#141413] font-editorial-heading">
-            ¿Preparado para construir software con criterio?
+            ¿Tienes una idea que quieres hacer realidad?
           </h2>
           <p className="text-sm text-[#5C5B56] leading-relaxed max-w-xl mx-auto">
-            Evaluamos tu proyecto de forma transparente. Hablemos de requerimientos técnicos, tiempos reales de entrega y presupuesto sin sorpresas.
+            Cuéntanos qué necesitas y conversemos sobre el siguiente paso, el alcance y los tiempos.
           </p>
           <div className="pt-2 flex flex-wrap justify-center gap-4">
             <Link to="/contacto">

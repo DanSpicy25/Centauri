@@ -17,10 +17,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const variantStyles = {
-      primary: 'bg-[#C85A32] text-white hover:bg-[#B24E2A] active:bg-[#9E4221] focus-visible:outline-[#C85A32]',
+      primary: 'bg-[#7C3AED] text-white hover:bg-[#6D28D9] active:bg-[#5B21B6] focus-visible:outline-[#7C3AED]',
       secondary: 'bg-[#141413] text-white hover:bg-[#2A2926] active:bg-[#000000] focus-visible:outline-[#141413]',
-      outline: 'border border-[#D1CEBF] bg-white text-[#141413] hover:bg-[#F5F4EF] hover:border-[#B5B2A1] active:bg-[#EAE8E0] focus-visible:outline-[#C85A32]',
-      ghost: 'text-[#141413] hover:bg-[#F5F4EF] active:bg-[#ECEAE3] focus-visible:outline-[#C85A32]',
+      outline: 'border border-[#D1CEBF] bg-white text-[#141413] hover:bg-[#F5F4EF] hover:border-[#B5B2A1] active:bg-[#EAE8E0] focus-visible:outline-[#7C3AED]',
+      ghost: 'text-[#141413] hover:bg-[#F5F4EF] active:bg-[#ECEAE3] focus-visible:outline-[#7C3AED]',
       danger: 'bg-[#DC2626] text-white hover:bg-[#B91C1C] active:bg-[#991B1B] focus-visible:outline-[#DC2626]',
     };
 

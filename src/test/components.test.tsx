@@ -38,10 +38,10 @@ describe('Design System & Foundations (Phase 01)', () => {
 
   it('debe centralizar tokens de diseño accesibles (WCAG AAA) y motion system', () => {
     expect(tokens.colors.canvas).toBe('#FBFBF9');
-    expect(tokens.colors.brand.primary).toBe('#C85A32');
+    expect(tokens.colors.brand.primary).toBe('#7C3AED');
     expect(tokens.colors.textMain).toBe('#141413');
-    expect(tokens.typography.fonts.heading).toContain('Playfair Display');
-    expect(tokens.typography.fonts.body).toContain('Plus Jakarta Sans');
+    expect(tokens.typography.fonts.heading).toContain('Newsreader');
+    expect(tokens.typography.fonts.body).toContain('Instrument Sans');
     expect(tokens.motion.durations.normal).toBe('220ms');
   });
 

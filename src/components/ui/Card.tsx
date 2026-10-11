@@ -18,7 +18,7 @@ export const Card: React.FC<CardProps> = ({
     default: 'bg-white border-[#E5E3DC] shadow-xs',
     subtle: 'bg-[#FBFBF9] border-[#E5E3DC]',
     elevated: 'bg-white border-[#E5E3DC] shadow-sm',
-    interactive: 'bg-white border-[#E5E3DC] shadow-xs hover:border-[#C85A32]/40 hover:-translate-y-1 hover:shadow-md active:scale-[0.99] cursor-pointer transition-all duration-200',
+    interactive: 'bg-white border-[#E5E3DC] shadow-xs hover:border-[#7C3AED]/40 hover:-translate-y-1 hover:shadow-md active:scale-[0.99] cursor-pointer transition-all duration-200',
   };
 
   const paddingStyles = {

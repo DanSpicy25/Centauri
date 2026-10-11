@@ -17,7 +17,7 @@ export const WorksPage: React.FC = () => {
     () => [
       { id: 'todos', label: 'Todas las categorías' },
       { id: 'Plataforma Empresarial', label: 'Plataformas Empresariales' },
-      { id: 'SaaS & Mensajería', label: 'SaaS & Mensajería' },
+      { id: 'Atención al Cliente', label: 'Atención al Cliente' },
       { id: 'Medios & Editorial', label: 'Medios & Editorial' },
       { id: 'Movilidad & Logística', label: 'Movilidad & Logística' },
       { id: 'Comercio Electrónico', label: 'Comercio Electrónico' },
@@ -54,21 +54,21 @@ export const WorksPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16">
       {/* 1. Header Editorial */}
-      <section className="max-w-3xl space-y-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5F4EF] border border-[#E5E3DC] text-xs font-semibold text-[#C85A32]">
+      <section className="max-w-3xl space-y-4" data-reveal>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5F4EF] border border-[#E5E3DC] text-xs font-semibold text-[#7C3AED]">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Portafolio & Casos de Estudio Verificados</span>
+          <span>Proyectos y soluciones</span>
         </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[#141413] leading-[1.12] font-editorial-heading">
-          Sistemas en operación real y desarrollos auditados
+          Ideas convertidas en soluciones útiles
         </h1>
         <p className="text-base sm:text-lg text-[#5C5B56] leading-relaxed font-editorial-body">
-          Cada caso expone con rigor el problema resuelto, las tecnologías comprobadas en código y el alcance preciso de la contribución de Lyberate, distinguiendo soluciones propias de proyectos para clientes.
+          Descubre qué necesidad había detrás de cada proyecto, cómo lo abordamos y qué parte desarrolló Lyberate.
         </p>
       </section>
 
       {/* 2. Banner de Atribución Obligatoria (Master Contract Sección 4.5) */}
-      <section className="p-6 rounded-2xl bg-[#FBFBF9] border border-[#E5E3DC] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+      <section className="p-6 rounded-2xl bg-[#FBFBF9] border border-[#E5E3DC] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs" data-reveal>
         <div className="flex items-start sm:items-center gap-3">
           <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5 sm:mt-0" />
           <div>
@@ -76,26 +76,26 @@ export const WorksPage: React.FC = () => {
               Compromiso de atribución transparente:
             </span>
             <span className="text-[#5C5B56]">
-              Clasificamos cada trabajo con exactitud (propio, cliente o colaboración). No inflamos métricas ficticias ni presentamos software de terceros adaptado como si hubiera sido creado desde cero.
+              Explicamos con claridad el papel de Lyberate en cada trabajo y compartimos únicamente resultados confirmados y autorizados.
             </span>
           </div>
         </div>
-        <span className="shrink-0 text-[11px] font-mono font-bold text-[#C85A32] bg-white px-2.5 py-1 rounded-full border border-[#E5E3DC]">
-          Auditoría de Código Verificada
+        <span className="shrink-0 text-[11px] font-mono font-bold text-[#7C3AED] bg-white px-2.5 py-1 rounded-full border border-[#E5E3DC]">
+          Trabajo y colaboración explicados con claridad
         </span>
       </section>
 
       {/* 3. Barra de Búsqueda y Filtros */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#E5E3DC] space-y-6 shadow-[0_12px_40px_rgba(20,20,19,0.04)]">
+      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#E5E3DC] space-y-6 shadow-[0_12px_40px_rgba(20,20,19,0.04)]" data-reveal>
         {/* Barra de Búsqueda */}
         <div className="relative max-w-lg">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8A8881]" />
           <input
             type="text"
-            placeholder="Buscar por tecnología (React 19, Flutter...), nombre o problema..."
+            placeholder="Buscar proyectos por nombre, sector o necesidad..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-9 py-2.5 text-xs bg-[#FBFBF9] rounded-xl border border-[#D1CEBF] text-[#141413] placeholder:text-[#8A8881] focus:outline-2 focus:outline-[#C85A32] transition-all"
+            className="w-full pl-10 pr-9 py-2.5 text-xs bg-[#FBFBF9] rounded-xl border border-[#D1CEBF] text-[#141413] placeholder:text-[#8A8881] focus:outline-2 focus:outline-[#7C3AED] transition-all"
           />
           {searchTerm && (
             <button
@@ -145,7 +145,7 @@ export const WorksPage: React.FC = () => {
                   className={`px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all cursor-pointer focus-visible:outline-2
                     ${
                       isActive
-                        ? 'bg-[#C85A32] text-white shadow-xs'
+                        ? 'bg-[#7C3AED] text-white shadow-xs'
                         : 'bg-[#F5F4EF] text-[#5C5B56] border border-[#E5E3DC] hover:border-[#D1CEBF] hover:text-[#141413]'
                     }`}
                 >
@@ -165,7 +165,7 @@ export const WorksPage: React.FC = () => {
             <button
               type="button"
               onClick={handleResetFilters}
-              className="text-[#C85A32] hover:underline font-bold cursor-pointer self-start sm:self-auto"
+              className="text-[#7C3AED] hover:underline font-bold cursor-pointer self-start sm:self-auto"
             >
               Restablecer todos los filtros
             </button>
@@ -185,7 +185,7 @@ export const WorksPage: React.FC = () => {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" data-reveal>
           {filteredProjects.map((project) => (
             <ProjectCard key={project.id} project={project} />
           ))}
@@ -193,16 +193,16 @@ export const WorksPage: React.FC = () => {
       )}
 
       {/* 5. CTA Final */}
-      <section className="text-center pt-8 border-t border-[#E5E3DC]">
+      <section className="text-center pt-8 border-t border-[#E5E3DC]" data-reveal>
         <div className="max-w-2xl mx-auto space-y-4">
-          <div className="w-10 h-10 rounded-xl bg-[#F5F4EF] text-[#C85A32] flex items-center justify-center mx-auto">
+          <div className="w-10 h-10 rounded-xl bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center mx-auto">
             <HelpCircle className="w-5 h-5" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#141413] font-editorial-heading">
             ¿Buscas construir un sistema similar?
           </h2>
           <p className="text-sm text-[#5C5B56] leading-relaxed">
-            Podemos diseñar una arquitectura análoga adaptada a la escala y procesos propios de tu organización.
+            Podemos conversar sobre una solución que se adapte a la manera de trabajar de tu organización.
           </p>
           <div className="pt-2">
             <Link to="/contacto">

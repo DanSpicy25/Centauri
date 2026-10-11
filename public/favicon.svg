@@ -1,6 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="8" fill="#141413"/>
-  <circle cx="16" cy="16" r="8" stroke="#C85A32" stroke-width="2.5"/>
-  <circle cx="16" cy="16" r="3" fill="#E07A5F"/>
+  <defs>
+    <linearGradient id="lyb-fav-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#7C3AED"/>
+      <stop offset="50%" stopColor="#6D28D9"/>
+      <stop offset="100%" stopColor="#4C1D95"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#lyb-fav-bg)"/>
+  <path d="M10 8C10 7.44772 10.4477 7 11 7H13C13.5523 7 14 7.44772 14 8V20H21C21.5523 20 22 20.4477 22 21V23C22 23.5523 21.5523 24 21 24H11C10.4477 24 10 23.5523 10 23V8Z" fill="#FFFFFF"/>
+  <circle cx="22" cy="10" r="2.5" fill="#DDD6FE"/>
 </svg>
-

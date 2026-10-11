@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   User,
   Save,
@@ -8,48 +8,45 @@ import {
   Mail,
   Phone,
   Globe,
-  RotateCcw,
   Zap,
 } from 'lucide-react';
 import { profileRepository, FounderProfileDTO } from '../../repositories/profileRepository';
+import { mockBackendRepository } from '../../repositories/mockBackendRepository';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Textarea } from '../../components/ui/Textarea';
 import { Select } from '../../components/ui/Select';
 
 export const ProfileHubPage: React.FC = () => {
-  const [profiles, setProfiles] = useState<FounderProfileDTO[]>(() =>
-    profileRepository.getProfiles()
-  );
-  const [activeProfileId, setActiveProfileId] = useState<string>(() =>
-    profileRepository.getActiveProfile().id
-  );
-  const [feedback, setFeedback] = useState<string | null>(null);
-
+  const activeProfileId = mockBackendRepository.getSession()?.profileId ?? profileRepository.getActiveProfile().id;
   const activeProfile =
-    profiles.find((p) => p.id === activeProfileId) || profiles[0];
-
+    profileRepository.getProfileById(activeProfileId) ?? profileRepository.getActiveProfile();
+  const [feedback, setFeedback] = useState<string | null>(null);
   const [formData, setFormData] = useState<FounderProfileDTO>({ ...activeProfile });
   const [newSpecialty, setNewSpecialty] = useState('');
 
-  const handleSelectProfile = (id: string) => {
-    setActiveProfileId(id);
-    profileRepository.setActiveProfileId(id);
-    const target = profiles.find((p) => p.id === id);
-    if (target) {
-      setFormData({ ...target });
-    }
-  };
+  useEffect(() => {
+    const refreshOwnProfile = () => {
+      profileRepository.reloadFromStorage();
+      const current = profileRepository.getProfileById(activeProfileId);
+      if (current) setFormData({ ...current });
+    };
+    window.addEventListener('storage', refreshOwnProfile);
+    window.addEventListener('lyberate-backend-update', refreshOwnProfile);
+    return () => {
+      window.removeEventListener('storage', refreshOwnProfile);
+      window.removeEventListener('lyberate-backend-update', refreshOwnProfile);
+    };
+  }, [activeProfileId]);
 
   const handleSave = () => {
     try {
-      const updated = profileRepository.updateProfile(formData.id, formData);
-      setProfiles(profileRepository.getProfiles());
+      const updated = mockBackendRepository.updateOwnProfile(formData);
       setFormData({ ...updated });
-      setFeedback('Perfil actualizado exitosamente. Cambios guardados en almacenamiento seguro.');
+      setFeedback('Tu perfil se guardó localmente y se avisó a tu socio en este navegador.');
       setTimeout(() => setFeedback(null), 4000);
-    } catch {
-      setFeedback('Error al guardar el perfil.');
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : 'No se pudo guardar el perfil.');
     }
   };
 
@@ -70,38 +67,24 @@ export const ProfileHubPage: React.FC = () => {
     });
   };
 
-  const handleReset = () => {
-    profileRepository.resetToDefault();
-    setProfiles(profileRepository.getProfiles());
-    const resetActive = profileRepository.getActiveProfile();
-    setActiveProfileId(resetActive.id);
-    setFormData({ ...resetActive });
-    setFeedback('Perfiles restaurados a sus valores verificados de auditoría.');
-    setTimeout(() => setFeedback(null), 3000);
-  };
-
   return (
     <div className="space-y-8 pb-20 max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#E5E3DC]">
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#F5F4EF] border border-[#E5E3DC] text-[11px] font-bold text-[#C85A32] mb-2">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#F5F4EF] border border-[#E5E3DC] text-[11px] font-bold text-[#7C3AED] mb-2">
             <User className="w-3 h-3" />
-            <span>Control Room — Perfil & Identidad Full-Stack</span>
+            <span>Control Room — Perfil del socio</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#141413] tracking-tight font-editorial-heading">
             Personalización de Perfiles & Socios
           </h1>
           <p className="text-sm text-[#5C5B56] mt-1 font-editorial-body">
-            Configuración de credenciales, especialidades full-stack, firmas automatizadas y presencia ejecutiva de los socios fundadores.
+            Actualiza la información de contacto y presentación de cada socio.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={handleReset} className="gap-1.5 text-xs">
-            <RotateCcw className="w-3.5 h-3.5 text-[#8A8881]" />
-            <span>Restaurar Predeterminados</span>
-          </Button>
           <Button variant="primary" size="sm" onClick={handleSave} className="gap-1.5 text-xs">
             <Save className="w-3.5 h-3.5" />
             <span>Guardar Perfil</span>
@@ -116,29 +99,17 @@ export const ProfileHubPage: React.FC = () => {
         </div>
       )}
 
-      {/* Switcher de Socio Fundador (Estilo iOS Píldora) */}
-      <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-[#E5E3DC] w-fit shadow-xs">
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-950">
+        Puedes editar únicamente tu perfil. Los cambios se guardan en localStorage y generan una notificación simulada para tu socio; no se comparten entre dispositivos.
+      </div>
+
+      <div className="flex items-center gap-3 bg-white p-3 rounded-2xl border border-[#E5E3DC] w-fit shadow-xs">
         <span className="text-xs font-bold text-[#8A8881] px-3 uppercase tracking-wider">
-          Socio Activo:
+          Sesión activa:
         </span>
-        {profiles.map((p) => {
-          const isSelected = p.id === activeProfileId;
-          return (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => handleSelectProfile(p.id)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                isSelected
-                  ? 'bg-[#141413] text-white shadow-xs'
-                  : 'bg-[#F5F4EF] text-[#5C5B56] hover:text-[#141413]'
-              }`}
-            >
-              <span className="w-2 h-2 rounded-full bg-[#C85A32]" />
-              <span>{p.name}</span>
-            </button>
-          );
-        })}
+        <span className="px-4 py-2 rounded-xl bg-[#141413] text-white text-xs font-bold">
+          {activeProfile.name}
+        </span>
       </div>
 
       {/* Grid Principal */}
@@ -146,19 +117,19 @@ export const ProfileHubPage: React.FC = () => {
         {/* Tarjeta de Presentación iOS27 Glass (col-span-4) */}
         <div className="lg:col-span-4 bg-white/95 backdrop-blur-xl rounded-3xl border border-[#E5E3DC] p-6 shadow-sm space-y-6">
           <div className="flex flex-col items-center text-center">
-            <div className="relative w-28 h-28 rounded-3xl overflow-hidden border-2 border-[#C85A32] shadow-md mb-4 bg-[#F5F4EF]">
+            <div className="relative w-28 h-28 rounded-3xl overflow-hidden border-2 border-[#7C3AED] shadow-md mb-4 bg-[#F5F4EF]">
               <img
                 src={formData.avatarUrl}
                 alt={formData.name}
                 className="w-full h-full object-cover"
               />
               <div className="absolute bottom-0 inset-x-0 bg-black/60 backdrop-blur-xs text-[10px] text-white py-0.5 font-mono">
-                Full-Stack
+                Socio fundador
               </div>
             </div>
 
             <h3 className="text-xl font-bold text-[#141413]">{formData.name}</h3>
-            <p className="text-xs font-semibold text-[#C85A32] mt-0.5">{formData.roleTitle}</p>
+            <p className="text-xs font-semibold text-[#7C3AED] mt-0.5">{formData.roleTitle}</p>
             <p className="text-xs text-[#5C5B56] mt-3 leading-relaxed text-balance">
               {formData.bio}
             </p>
@@ -166,15 +137,15 @@ export const ProfileHubPage: React.FC = () => {
 
           <div className="pt-4 border-t border-[#F0EFEA] space-y-2.5 text-xs">
             <div className="flex items-center gap-2.5 text-[#5C5B56]">
-              <Mail className="w-4 h-4 text-[#C85A32] shrink-0" />
+              <Mail className="w-4 h-4 text-[#7C3AED] shrink-0" />
               <span className="truncate">{formData.email}</span>
             </div>
             <div className="flex items-center gap-2.5 text-[#5C5B56]">
-              <Phone className="w-4 h-4 text-[#C85A32] shrink-0" />
+              <Phone className="w-4 h-4 text-[#7C3AED] shrink-0" />
               <span>{formData.phone}</span>
             </div>
             <div className="flex items-center gap-2.5 text-[#5C5B56]">
-              <Globe className="w-4 h-4 text-[#C85A32] shrink-0" />
+              <Globe className="w-4 h-4 text-[#7C3AED] shrink-0" />
               <span>Tema: {formData.themePreference.toUpperCase()}</span>
             </div>
           </div>
@@ -195,7 +166,7 @@ export const ProfileHubPage: React.FC = () => {
                   setTimeout(() => setFeedback(null), 3000);
                 }}
               >
-                <Zap className="w-3 h-3 text-[#C85A32]" />
+                <Zap className="w-3 h-3 text-[#7C3AED]" />
                 <span>Copiar Firma</span>
               </Button>
               <Button
@@ -265,15 +236,15 @@ export const ProfileHubPage: React.FC = () => {
             rows={3}
           />
 
-          {/* Especialidades Full-Stack */}
+          {/* Áreas de experiencia */}
           <div className="p-5 rounded-2xl bg-[#FBFBF9] border border-[#E5E3DC] space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-[#141413] block">
-                  Especialidades & Habilidades Técnicas ({formData.specialties.length})
+                  Áreas de experiencia ({formData.specialties.length})
                 </span>
                 <p className="text-[11px] text-[#5C5B56]">
-                  Añade áreas de experiencia: Backend, Fintech, Flutter, NestJS, UI/UX, etc.
+                  Añade los temas y servicios que quieres destacar en tu perfil.
                 </p>
               </div>
             </div>
@@ -284,7 +255,7 @@ export const ProfileHubPage: React.FC = () => {
                   key={spec}
                   className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white border border-[#E5E3DC] text-[#141413] shadow-xs"
                 >
-                  <Code2 className="w-3 h-3 text-[#C85A32]" />
+                  <Code2 className="w-3 h-3 text-[#7C3AED]" />
                   <span>{spec}</span>
                   <button
                     type="button"

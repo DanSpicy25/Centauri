@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Users,
   DollarSign,
@@ -19,8 +19,13 @@ import {
   List,
   Edit,
   MessageSquare,
+  Inbox,
+  Send,
+  Archive,
 } from 'lucide-react';
 import { crmRepository } from '../../repositories/crmRepository';
+import { inquiryRepository } from '../../repositories/inquiryRepository';
+import { centauriProjectRepository } from '../../repositories/centauriProjectRepository';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
@@ -36,9 +41,10 @@ import {
   DealStage,
   ClientTier,
 } from '../../types/crm';
+import { InquirySubmissionDTO, InquiryStatus } from '../../types/inquiries';
 
 export const CrmHubPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'pipeline' | 'clients' | 'tasks' | 'timeline' | 'chat_satellite'>('pipeline');
+  const [activeTab, setActiveTab] = useState<'pipeline' | 'inbox' | 'clients' | 'tasks' | 'timeline' | 'chat_satellite'>('pipeline');
   const [pipelineViewMode, setPipelineViewMode] = useState<'kanban' | 'table'>('kanban');
 
   // Listas de datos reactivas
@@ -46,12 +52,22 @@ export const CrmHubPage: React.FC = () => {
   const [deals, setDeals] = useState<DealDTO[]>(() => crmRepository.getDeals());
   const [tasks, setTasks] = useState<CrmTaskDTO[]>(() => crmRepository.getTasks());
   const [activities, setActivities] = useState<CrmActivityDTO[]>(() => crmRepository.getActivities());
+  const [inquiries, setInquiries] = useState<InquirySubmissionDTO[]>(() => inquiryRepository.getAll());
 
   // Búsquedas y filtros
   const [clientSearch, setClientSearch] = useState('');
   const [clientTierFilter, setClientTierFilter] = useState('todos');
   const [dealSearch, setDealSearch] = useState('');
   const [dealStageFilter, setDealStageFilter] = useState('todos');
+
+  // Filtros de Bandeja Central de Consultas
+  const [inquirySearch, setInquirySearch] = useState('');
+  const [inquiryFilterStatus, setInquiryFilterStatus] = useState('todos');
+  const [inquiryFilterPartner, setInquiryFilterPartner] = useState('todos');
+  const [selectedInquiry, setSelectedInquiry] = useState<InquirySubmissionDTO | null>(null);
+  const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
+  const [replyChannel, setReplyChannel] = useState<'email' | 'whatsapp'>('email');
+  const [replyText, setReplyText] = useState('');
 
   // Modales
   const [dealModalOpen, setDealModalOpen] = useState(false);
@@ -75,7 +91,20 @@ export const CrmHubPage: React.FC = () => {
     setDeals(crmRepository.getDeals());
     setTasks(crmRepository.getTasks());
     setActivities(crmRepository.getActivities());
+    setInquiries(inquiryRepository.getAll());
   };
+
+  useEffect(() => {
+    const handleInqUpdate = () => refreshAll();
+    window.addEventListener('lyberate-inquiries-update', handleInqUpdate);
+    window.addEventListener('lyberate-projects-update', handleInqUpdate);
+    window.addEventListener('storage', handleInqUpdate);
+    return () => {
+      window.removeEventListener('lyberate-inquiries-update', handleInqUpdate);
+      window.removeEventListener('lyberate-projects-update', handleInqUpdate);
+      window.removeEventListener('storage', handleInqUpdate);
+    };
+  }, []);
 
   const showNotification = (type: 'success' | 'error', text: string) => {
     setFeedback({ type, text });
@@ -83,6 +112,128 @@ export const CrmHubPage: React.FC = () => {
   };
 
   const summary = crmRepository.getPipelineSummary();
+
+  // Convertir consulta en Cliente + Oportunidad CRM
+  const handleConvertInquiryToCrm = (inquiry: InquirySubmissionDTO) => {
+    let client = clients.find((c) => c.email.toLowerCase() === inquiry.email.toLowerCase());
+    if (!client) {
+      client = crmRepository.createClient({
+        name: inquiry.name,
+        companyName: inquiry.companyName || inquiry.name,
+        contactPerson: inquiry.name,
+        email: inquiry.email,
+        phone: inquiry.phone,
+        industry: inquiry.needType,
+        tier: 'standard',
+        status: 'lead',
+        assignedPartner: inquiry.assignedPartner,
+        totalContractValueUsd: 0,
+        notes: `Origen: Consulta pública. ${inquiry.description}`,
+      });
+    }
+
+    const estimatedUsd = inquiry.budgetEstimated?.includes('5,000') ? 4500 : 2500;
+    const deal = crmRepository.createDeal({
+      title: `${inquiry.needType} — ${inquiry.companyName || inquiry.name}`,
+      clientId: client.id,
+      clientName: client.name,
+      stage: 'discovery',
+      priority: inquiry.priority === 'high' ? 'high' : 'medium',
+      valueUsd: estimatedUsd,
+      probabilityPercent: 40,
+      assignedPartner: inquiry.assignedPartner,
+      serviceCategory: inquiry.needType,
+      technicalScopeSummary: inquiry.description,
+      notes: `Convertido desde bandeja de consultas (${inquiry.id}).`,
+    });
+
+    inquiryRepository.linkToDealOrProject(inquiry.id, deal.id);
+    refreshAll();
+    showNotification('success', `Consulta convertida en oportunidad comercial: "${deal.title}"`);
+  };
+
+  // Convertir oportunidad ganada en Proyecto Operativo
+  const handleConvertDealToProject = (deal: DealDTO) => {
+    const client = clients.find((c) => c.id === deal.clientId);
+    const createdPrj = centauriProjectRepository.createProject({
+      name: deal.title,
+      companyName: deal.clientName,
+      companyId: deal.clientId,
+      assignedPartner: deal.assignedPartner === 'Valdez' ? 'Valdez' : 'Socio Fundador',
+      status: 'planning',
+      paymentStatus: 'unpaid',
+      currency: 'USD',
+      totalAgreedAmount: deal.valueUsd,
+      startDate: new Date().toISOString().split('T')[0],
+      targetDeliveryDate: deal.expectedCloseDate || new Date(Date.now() + 86400000 * 30).toISOString().split('T')[0],
+      primaryContact: {
+        name: client?.contactPerson || deal.clientName,
+        email: client?.email || '',
+        phone: client?.phone || '',
+        role: 'Representante Principal',
+      },
+      scopeSummary: deal.technicalScopeSummary || `Desarrollo acordado para ${deal.clientName}`,
+      deliverables: [
+        {
+          id: `del-${Date.now()}-1`,
+          title: 'Arquitectura & Requerimientos Aprobados',
+          description: 'Documentación inicial de requerimientos y wireframes de interfaz.',
+          status: 'in_progress',
+          targetDueDate: new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0],
+        },
+        {
+          id: `del-${Date.now()}-2`,
+          title: 'Entrega Fase 1: Prototipo Navegable',
+          description: 'Frontend funcional para revisión y validación del cliente.',
+          status: 'planned',
+          targetDueDate: new Date(Date.now() + 86400000 * 18).toISOString().split('T')[0],
+        },
+        {
+          id: `del-${Date.now()}-3`,
+          title: 'Despliegue Final & Entrega en Producción',
+          description: 'Puesta en marcha, entrega de accesos y manual de operación.',
+          status: 'planned',
+          targetDueDate: deal.expectedCloseDate || new Date(Date.now() + 86400000 * 30).toISOString().split('T')[0],
+        },
+      ],
+      milestones: [
+        {
+          id: `mls-${Date.now()}-1`,
+          title: 'Anticipo inicial acordado (50%)',
+          targetDate: new Date().toISOString().split('T')[0],
+          status: 'pending',
+          paymentTriggerAmountUsd: Math.round(deal.valueUsd * 0.5),
+        },
+        {
+          id: `mls-${Date.now()}-2`,
+          title: 'Contra entrega final aprobada (50%)',
+          targetDate: deal.expectedCloseDate || new Date(Date.now() + 86400000 * 30).toISOString().split('T')[0],
+          status: 'pending',
+          paymentTriggerAmountUsd: Math.round(deal.valueUsd * 0.5),
+        },
+      ],
+      tasks: [],
+    });
+
+    crmRepository.moveDealStage(deal.id, 'won', deal.assignedPartner);
+    refreshAll();
+    showNotification('success', `¡Contrato ganado! Proyecto operativo "${createdPrj.name}" creado en Proyectos & Entregas.`);
+  };
+
+  // Enviar respuesta simulada a consulta
+  const handleSendSimulatedReply = () => {
+    if (!selectedInquiry || !replyText.trim()) return;
+    inquiryRepository.addReply(selectedInquiry.id, {
+      author: selectedInquiry.assignedPartner,
+      channel: replyChannel,
+      text: replyText.trim(),
+    });
+    setReplyText('');
+    const updated = inquiryRepository.getInquiryById(selectedInquiry.id);
+    setSelectedInquiry(updated || null);
+    refreshAll();
+    showNotification('success', `Respuesta simulada registrada vía ${replyChannel.toUpperCase()} (Modo Local).`);
+  };
 
   // Guardar Oportunidad (Deal)
   const handleSaveDeal = () => {
@@ -222,7 +373,7 @@ export const CrmHubPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#E5E3DC]">
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#F5F4EF] border border-[#E5E3DC] text-[11px] font-bold text-[#C85A32] mb-2">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#FAF5FF] border border-[#E9D5FF] text-[11px] font-bold text-[#7C3AED] mb-2">
             <Briefcase className="w-3 h-3" />
             <span>Fase 06 — CRM Comercial & Pipeline</span>
           </div>
@@ -326,7 +477,7 @@ export const CrmHubPage: React.FC = () => {
         <div className="bg-white p-5 rounded-xl border border-[#E5E3DC]">
           <div className="flex items-center justify-between text-xs font-semibold text-[#8A8881] mb-2">
             <span>PIPELINE ACTIVO</span>
-            <DollarSign className="w-4 h-4 text-[#C85A32]" />
+            <DollarSign className="w-4 h-4 text-[#7C3AED]" />
           </div>
           <div className="text-2xl font-bold text-[#141413]">
             ${summary.totalPipelineValueUsd.toLocaleString()} USD
@@ -374,6 +525,7 @@ export const CrmHubPage: React.FC = () => {
       <Tabs
         tabs={[
           { id: 'pipeline', label: `Pipeline Comercial (${deals.length})` },
+          { id: 'inbox', label: `Bandeja de Consultas (${inquiries.length})` },
           { id: 'clients', label: `Directorio de Clientes (${clients.length})` },
           { id: 'tasks', label: `Tareas & Hitos (${tasks.length})` },
           { id: 'timeline', label: `Línea de Tiempo (${activities.length})` },
@@ -484,7 +636,7 @@ export const CrmHubPage: React.FC = () => {
 
                             <div className="flex items-center justify-between text-[11px]">
                               <span className="font-semibold text-[#5C5B56]">{deal.clientName}</span>
-                              <span className="font-mono font-bold text-[#C85A32]">
+                              <span className="font-mono font-bold text-[#7C3AED]">
                                 ${deal.valueUsd.toLocaleString()}
                               </span>
                             </div>
@@ -493,6 +645,18 @@ export const CrmHubPage: React.FC = () => {
                               <span>{deal.probabilityPercent}% prob.</span>
                               <span className="font-mono">{deal.assignedPartner}</span>
                             </div>
+
+                            {/* Botón especial para Oportunidades Ganadas: Desencadenar Proyecto */}
+                            {deal.stage === 'won' && (
+                              <button
+                                type="button"
+                                onClick={() => handleConvertDealToProject(deal)}
+                                className="w-full mt-1 py-1 px-2 rounded-lg bg-[#FAF5FF] hover:bg-[#F3E8FF] border border-[#E9D5FF] text-[10px] font-bold text-[#7C3AED] flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                              >
+                                <Briefcase className="w-3 h-3 text-[#7C3AED]" />
+                                <span>Crear Proyecto Operativo</span>
+                              </button>
+                            )}
 
                             {/* Controles para mover de etapa */}
                             <div className="flex items-center justify-between pt-2 border-t border-[#F5F4EF]">
@@ -608,6 +772,262 @@ export const CrmHubPage: React.FC = () => {
         </div>
       )}
 
+      {activeTab === 'inbox' && (
+        <section className="space-y-6">
+          {/* Top Banner and Summary */}
+          <div className="bg-white p-6 rounded-2xl border border-[#E5E3DC] flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-[#7C3AED]">
+                <Inbox className="h-4 w-4" />
+                <span className="text-xs font-semibold uppercase tracking-wider">Bandeja Central & Despacho</span>
+              </div>
+              <h2 className="mt-1 text-xl font-bold text-[#141413]">Consultas Web y Solicitudes de Propuesta</h2>
+              <p className="mt-1 max-w-2xl text-xs leading-relaxed text-[#5C5B56]">
+                Revisa los mensajes entrantes del formulario público de Lyberate o registros manuales. Inspecciona las necesidades del cliente, asigna socio responsable, simula respuestas y convierte solicitudes en oportunidades comerciales.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Badge variant="brand" size="sm">Mocks locales tipados</Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const demoInq = inquiryRepository.createInquiry({
+                    name: 'Distribuciones Santa Rosa',
+                    companyName: 'Santa Rosa Distribuidora C.A.',
+                    email: 'compras@santarosa.ve',
+                    phone: '+58 412 111 2233',
+                    needType: 'Catálogo mayorista & Pedidos WhatsApp',
+                    budgetEstimated: '$2,000 - $3,500',
+                    timeline: '1-2 meses',
+                    description: 'Requerimos actualizar nuestro catálogo digital para enviar listas de precios y recibir comprobantes de pago organizados.',
+                    priority: 'high',
+                    assignedPartner: 'Valdez',
+                  });
+                  refreshAll();
+                  showNotification('success', `Consulta de demostración creada: "${demoInq.name}"`);
+                }}
+                className="text-xs gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Consulta de Prueba</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Search & Filter Toolbar */}
+          <div className="bg-white p-4 rounded-xl border border-[#E5E3DC] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="relative flex-1 max-w-md">
+              <Search className="w-4 h-4 absolute left-3 top-3 text-[#8A8881]" />
+              <Input
+                value={inquirySearch}
+                onChange={(e) => setInquirySearch(e.target.value)}
+                placeholder="Buscar por nombre, empresa, email o servicio..."
+                className="pl-9 text-xs"
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Select
+                value={inquiryFilterStatus}
+                onChange={(e) => setInquiryFilterStatus(e.target.value)}
+                className="text-xs w-44"
+                options={[
+                  { value: 'todos', label: 'Todos los estados' },
+                  { value: 'new', label: 'Nuevas (Sin atender)' },
+                  { value: 'reviewing', label: 'En revisión' },
+                  { value: 'replied', label: 'Respondidas' },
+                  { value: 'converted', label: 'Convertidas a CRM' },
+                  { value: 'archived', label: 'Archivadas' },
+                ]}
+              />
+
+              <Select
+                value={inquiryFilterPartner}
+                onChange={(e) => setInquiryFilterPartner(e.target.value)}
+                className="text-xs w-44"
+                options={[
+                  { value: 'todos', label: 'Todos los socios' },
+                  { value: 'Valdez', label: 'Asignado: Valdez' },
+                  { value: 'Socio Fundador', label: 'Asignado: Socio' },
+                ]}
+              />
+            </div>
+          </div>
+
+          {/* Inquiries Table */}
+          {(() => {
+            const filteredInquiries = inquiries.filter((inq) => {
+              const matchesSearch =
+                inq.name.toLowerCase().includes(inquirySearch.toLowerCase()) ||
+                (inq.companyName && inq.companyName.toLowerCase().includes(inquirySearch.toLowerCase())) ||
+                inq.email.toLowerCase().includes(inquirySearch.toLowerCase()) ||
+                inq.needType.toLowerCase().includes(inquirySearch.toLowerCase());
+              const matchesStatus = inquiryFilterStatus === 'todos' || inq.status === inquiryFilterStatus;
+              const matchesPartner = inquiryFilterPartner === 'todos' || inq.assignedPartner === inquiryFilterPartner;
+              return matchesSearch && matchesStatus && matchesPartner;
+            });
+
+            if (filteredInquiries.length === 0) {
+              return (
+                <div className="rounded-2xl border border-dashed border-[#D1CEBF] bg-[#FBFBF9] px-6 py-12 text-center">
+                  <Inbox className="mx-auto h-8 w-8 text-[#8A8881]" />
+                  <h3 className="mt-3 text-sm font-semibold text-[#141413]">No hay consultas que coincidan</h3>
+                  <p className="mt-1 text-xs text-[#5C5B56]">Ajusta los filtros o crea una consulta de prueba para verificar el flujo.</p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="overflow-x-auto rounded-2xl border border-[#E5E3DC] bg-white">
+                <table className="w-full min-w-[840px] text-left text-xs">
+                  <thead className="border-b border-[#E5E3DC] bg-[#FBFBF9] text-[#5C5B56]">
+                    <tr>
+                      <th className="px-5 py-3.5 font-semibold">Contacto & Empresa</th>
+                      <th className="px-5 py-3.5 font-semibold">Necesidad & Presupuesto</th>
+                      <th className="px-5 py-3.5 font-semibold">Fecha & Responsable</th>
+                      <th className="px-5 py-3.5 font-semibold">Estado</th>
+                      <th className="px-5 py-3.5 font-semibold text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#F0EFEA]">
+                    {filteredInquiries.map((inq) => {
+                      let statusVariant: 'brand' | 'warning' | 'success' | 'neutral' = 'neutral';
+                      let statusLabel: string = inq.status;
+                      if (inq.status === 'new') {
+                        statusVariant = 'brand';
+                        statusLabel = 'Nueva';
+                      } else if (inq.status === 'reviewing') {
+                        statusVariant = 'warning';
+                        statusLabel = 'En revisión';
+                      } else if (inq.status === 'replied') {
+                        statusVariant = 'brand';
+                        statusLabel = 'Respondida';
+                      } else if (inq.status === 'converted') {
+                        statusVariant = 'success';
+                        statusLabel = 'Convertida';
+                      } else if (inq.status === 'archived') {
+                        statusVariant = 'neutral';
+                        statusLabel = 'Archivada';
+                      }
+
+                      return (
+                        <tr key={inq.id} className="align-top hover:bg-[#FAF5FF]/30 transition-colors">
+                          <td className="px-5 py-4">
+                            <span className="block font-bold text-[#141413] text-sm">{inq.name}</span>
+                            {inq.companyName && (
+                              <span className="block text-[11px] text-[#5C5B56] font-medium mt-0.5">
+                                {inq.companyName}
+                              </span>
+                            )}
+                            <div className="flex items-center gap-2 mt-1">
+                              <a
+                                href={`mailto:${inq.email}`}
+                                className="text-[11px] text-[#7C3AED] hover:underline"
+                              >
+                                {inq.email}
+                              </a>
+                              {inq.phone && (
+                                <span className="text-[11px] text-[#8A8881] font-mono">
+                                  • {inq.phone}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          <td className="px-5 py-4 max-w-sm">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-semibold text-[#141413]">{inq.needType}</span>
+                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">
+                                {inq.budgetEstimated}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-[#5C5B56] line-clamp-2 leading-relaxed">
+                              {inq.description}
+                            </p>
+                            {inq.timeline && (
+                              <span className="text-[10px] text-[#8A8881] mt-1 block">
+                                Plazo estimado: {inq.timeline}
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="px-5 py-4">
+                            <span className="text-[11px] text-[#141413] block font-medium">
+                              {new Date(inq.createdAt).toLocaleDateString('es', { day: '2-digit', month: 'short' })}
+                            </span>
+                            <div className="mt-1 flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-[#7C3AED]" />
+                              <span className="text-[11px] text-[#5C5B56] font-mono">
+                                {inq.assignedPartner}
+                              </span>
+                            </div>
+                          </td>
+
+                          <td className="px-5 py-4">
+                            <Badge variant={statusVariant} size="sm">
+                              {statusLabel}
+                            </Badge>
+                            {inq.replies && inq.replies.length > 0 && (
+                              <span className="text-[10px] text-[#7C3AED] block mt-1 font-semibold">
+                                {inq.replies.length} respuesta(s)
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="px-5 py-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedInquiry(inq);
+                                  setInquiryModalOpen(true);
+                                }}
+                                className="text-xs"
+                              >
+                                Detalle & Responder
+                              </Button>
+
+                              {inq.status !== 'converted' && (
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  onClick={() => handleConvertInquiryToCrm(inq)}
+                                  className="text-xs bg-[#7C3AED] hover:bg-[#6D28D9]"
+                                  title="Crear cliente y oportunidad en el CRM"
+                                >
+                                  Convertir a CRM
+                                </Button>
+                              )}
+
+                              {inq.status !== 'archived' && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    inquiryRepository.archiveInquiry(inq.id);
+                                    refreshAll();
+                                    showNotification('success', 'Consulta archivada.');
+                                  }}
+                                  className="p-1.5 text-[#8A8881] hover:text-[#141413] hover:bg-[#F5F4EF] rounded-lg transition-colors cursor-pointer"
+                                  title="Archivar consulta"
+                                >
+                                  <Archive className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })()}
+        </section>
+      )}
+
       {/* TAB 2: DIRECTORIO DE CLIENTES */}
       {activeTab === 'clients' && (
         <div className="space-y-6">
@@ -691,7 +1111,7 @@ export const CrmHubPage: React.FC = () => {
 
                       <td className="px-6 py-4">
                         {cli.managedSiteIds && cli.managedSiteIds.length > 0 ? (
-                          <span className="text-[11px] font-mono text-[#C85A32]">
+                          <span className="text-[11px] font-mono text-[#7C3AED]">
                             {cli.managedSiteIds.join(', ')}
                           </span>
                         ) : (
@@ -766,7 +1186,7 @@ export const CrmHubPage: React.FC = () => {
                     type="checkbox"
                     checked={task.status === 'completed'}
                     onChange={() => handleToggleTask(task)}
-                    className="w-4 h-4 rounded text-[#C85A32] accent-[#C85A32] cursor-pointer"
+                    className="w-4 h-4 rounded text-[#7C3AED] accent-[#7C3AED] cursor-pointer"
                   />
                   <div>
                     <h4
@@ -838,7 +1258,7 @@ export const CrmHubPage: React.FC = () => {
                 key={act.id}
                 className="p-4 bg-white rounded-xl border border-[#E5E3DC] flex items-start gap-3.5"
               >
-                <div className="w-8 h-8 rounded-lg bg-[#F5F4EF] text-[#C85A32] flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-8 h-8 rounded-lg bg-[#FAF5FF] text-[#7C3AED] flex items-center justify-center shrink-0 mt-0.5">
                   {act.type === 'call' && <Phone className="w-4 h-4" />}
                   {act.type === 'meeting' && <Users className="w-4 h-4" />}
                   {act.type === 'proposal' && <FileText className="w-4 h-4" />}
@@ -853,7 +1273,7 @@ export const CrmHubPage: React.FC = () => {
                     </span>
                   </div>
                   {act.clientName && (
-                    <span className="text-[11px] font-semibold text-[#C85A32] block mt-0.5">
+                    <span className="text-[11px] font-semibold text-[#7C3AED] block mt-0.5">
                       {act.clientName}
                     </span>
                   )}
@@ -872,7 +1292,7 @@ export const CrmHubPage: React.FC = () => {
       {activeTab === 'chat_satellite' && (
         <div className="bg-white rounded-2xl border border-[#E5E3DC] p-8 max-w-4xl space-y-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-[#F5F4EF] text-[#C85A32] flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-[#FAF5FF] text-[#7C3AED] flex items-center justify-center shrink-0">
               <MessageSquare className="w-6 h-6" />
             </div>
             <div>
@@ -1236,6 +1656,224 @@ export const CrmHubPage: React.FC = () => {
               rows={3}
               placeholder="Puntos tratados, compromisos y siguientes pasos..."
             />
+          </div>
+        </Dialog>
+      )}
+
+      {/* MODAL: DETALLE DE CONSULTA & RESPUESTA SIMULADA */}
+      {inquiryModalOpen && selectedInquiry && (
+        <Dialog
+          isOpen={true}
+          onClose={() => {
+            setInquiryModalOpen(false);
+            setSelectedInquiry(null);
+          }}
+          title={`Detalle de Consulta — ${selectedInquiry.name}`}
+          description={`Registrada el ${new Date(selectedInquiry.createdAt).toLocaleDateString('es')} • Canal: Web Pública (Demostración local)`}
+          footer={
+            <div className="flex justify-between items-center w-full">
+              <div>
+                {selectedInquiry.status !== 'converted' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      handleConvertInquiryToCrm(selectedInquiry);
+                      setInquiryModalOpen(false);
+                    }}
+                    className="gap-1.5 text-xs text-[#7C3AED] border-[#E9D5FF] hover:bg-[#FAF5FF]"
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    <span>Convertir a Cliente & Deal</span>
+                  </Button>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setInquiryModalOpen(false);
+                    setSelectedInquiry(null);
+                  }}
+                >
+                  Cerrar
+                </Button>
+              </div>
+            </div>
+          }
+        >
+          <div className="space-y-5 max-h-[75vh] overflow-y-auto pr-1 text-xs">
+            {/* Metadatos principales */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-[#FBFBF9] rounded-xl border border-[#E5E3DC]">
+              <div>
+                <span className="text-[10px] text-[#8A8881] font-bold uppercase tracking-wider block">Contacto & Empresa</span>
+                <span className="font-bold text-[#141413] text-sm block mt-0.5">{selectedInquiry.name}</span>
+                <span className="text-[#5C5B56] block">{selectedInquiry.companyName || 'Sin empresa'}</span>
+                <a href={`mailto:${selectedInquiry.email}`} className="text-[#7C3AED] hover:underline block mt-0.5">{selectedInquiry.email}</a>
+                {selectedInquiry.phone && <span className="text-[#8A8881] font-mono block">{selectedInquiry.phone}</span>}
+              </div>
+
+              <div>
+                <span className="text-[10px] text-[#8A8881] font-bold uppercase tracking-wider block">Requerimiento & Presupuesto</span>
+                <span className="font-semibold text-[#141413] block mt-0.5">{selectedInquiry.needType}</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono font-bold">
+                    {selectedInquiry.budgetEstimated}
+                  </span>
+                  {selectedInquiry.timeline && (
+                    <span className="text-[#8A8881]">{selectedInquiry.timeline}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Mensaje original del prospecto */}
+            <div>
+              <span className="text-[11px] font-bold text-[#141413] block mb-1">Mensaje y especificación del prospecto:</span>
+              <div className="p-3.5 bg-white rounded-xl border border-[#E5E3DC] text-[#141413] whitespace-pre-wrap leading-relaxed font-editorial-body text-sm">
+                {selectedInquiry.description}
+              </div>
+            </div>
+
+            {/* Asignación y Estado */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Select
+                label="Socio Asignado"
+                value={selectedInquiry.assignedPartner}
+                onChange={(e) => {
+                  const updated = inquiryRepository.assignPartner(selectedInquiry.id, e.target.value as 'Valdez' | 'Socio Fundador');
+                  setSelectedInquiry({ ...updated });
+                  refreshAll();
+                  showNotification('success', `Responsable actualizado a ${e.target.value}.`);
+                }}
+                options={[
+                  { value: 'Valdez', label: 'Valdez' },
+                  { value: 'Socio Fundador', label: 'Socio Fundador' },
+                ]}
+              />
+
+              <Select
+                label="Estado de la Consulta"
+                value={selectedInquiry.status}
+                onChange={(e) => {
+                  const updated = inquiryRepository.updateInquiryStatus(selectedInquiry.id, e.target.value as InquiryStatus);
+                  setSelectedInquiry({ ...updated });
+                  refreshAll();
+                  showNotification('success', `Estado actualizado a "${e.target.value}".`);
+                }}
+                options={[
+                  { value: 'new', label: 'Nueva' },
+                  { value: 'reviewing', label: 'En revisión' },
+                  { value: 'replied', label: 'Respondida' },
+                  { value: 'converted', label: 'Convertida' },
+                  { value: 'archived', label: 'Archivada' },
+                ]}
+              />
+            </div>
+
+            {/* Notas internas */}
+            <div>
+              <Textarea
+                label="Notas internas de los socios"
+                value={selectedInquiry.notes || ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSelectedInquiry((prev) => (prev ? { ...prev, notes: val } : null));
+                }}
+                rows={2}
+                placeholder="Observaciones de seguimiento o acuerdos preliminares..."
+              />
+              <div className="flex justify-end mt-1.5">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    inquiryRepository.updateNotes(selectedInquiry.id, selectedInquiry.notes || '');
+                    refreshAll();
+                    showNotification('success', 'Notas internas guardadas.');
+                  }}
+                >
+                  Guardar Notas
+                </Button>
+              </div>
+            </div>
+
+            {/* Historial de Respuestas */}
+            {selectedInquiry.replies && selectedInquiry.replies.length > 0 && (
+              <div>
+                <span className="text-[11px] font-bold text-[#141413] block mb-2">Respuestas simuladas enviadas ({selectedInquiry.replies.length}):</span>
+                <div className="space-y-2">
+                  {selectedInquiry.replies.map((rep) => (
+                    <div key={rep.id} className="p-3 bg-[#FAF5FF] rounded-xl border border-[#E9D5FF] text-xs">
+                      <div className="flex items-center justify-between text-[#7C3AED] font-semibold mb-1">
+                        <span className="capitalize">Vía {rep.channel} • Por {rep.author}</span>
+                        <span className="text-[10px] text-[#8A8881] font-mono">
+                          {new Date(rep.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <p className="text-[#141413] whitespace-pre-wrap">{rep.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Compositor de Respuesta Simulada */}
+            <div className="p-4 bg-white rounded-xl border border-[#7C3AED]/30 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-[#141413] text-xs flex items-center gap-1.5">
+                  <Send className="w-3.5 h-3.5 text-[#7C3AED]" />
+                  <span>Responder al prospecto (Demostración Local)</span>
+                </span>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-1 text-[11px] cursor-pointer">
+                    <input
+                      type="radio"
+                      name="replyChannel"
+                      checked={replyChannel === 'email'}
+                      onChange={() => setReplyChannel('email')}
+                      className="accent-[#7C3AED]"
+                    />
+                    <span>Email</span>
+                  </label>
+                  <label className="flex items-center gap-1 text-[11px] cursor-pointer">
+                    <input
+                      type="radio"
+                      name="replyChannel"
+                      checked={replyChannel === 'whatsapp'}
+                      onChange={() => setReplyChannel('whatsapp')}
+                      className="accent-[#7C3AED]"
+                    />
+                    <span>WhatsApp</span>
+                  </label>
+                </div>
+              </div>
+
+              <Textarea
+                label=""
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                rows={3}
+                placeholder={`Redacta la respuesta que se enviará simuladamente vía ${replyChannel.toUpperCase()}...`}
+              />
+
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[10px] text-[#8A8881]">
+                  * Esta acción registra la respuesta localmente sin conectar a proveedores de correo o mensajería externos.
+                </span>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleSendSimulatedReply}
+                  disabled={!replyText.trim()}
+                  className="bg-[#7C3AED] hover:bg-[#6D28D9] gap-1.5"
+                >
+                  <Send className="w-3 h-3" />
+                  <span>Enviar Respuesta</span>
+                </Button>
+              </div>
+            </div>
           </div>
         </Dialog>
       )}
